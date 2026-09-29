@@ -1,0 +1,731 @@
+<!-- RepatriateWA Millionaire Tax demonstration map v1.0.10 — deterministic mobile controls + responsive desktop, FY2029 Models 1/2/3 -->
+<style>
+#rw-ldmap-v24 {
+  --ink:#222;
+  --muted:#666;
+  --line:#d7d7d2;
+  --paper:#fff;
+  --soft:#f4f3ed;
+  --accent:#d4ad3b;
+  --federal:#49645a;
+  max-width:1180px;
+  margin:0 auto;
+  color:var(--ink);
+  font-family:Arial,Helvetica,sans-serif;
+}
+#rw-ldmap-v24 *{box-sizing:border-box}
+#rw-ldmap-v24 .kicker{letter-spacing:.13em;text-transform:uppercase;font-size:.76rem;color:var(--muted);font-weight:700}
+#rw-ldmap-v24 h1{margin:.25rem 0 .35rem;font-size:clamp(1.6rem,3vw,2.5rem);line-height:1.05}
+#rw-ldmap-v24 .intro{margin:0 0 18px;color:var(--muted);max-width:900px;line-height:1.5}
+#rw-ldmap-v24 .controls{display:flex;gap:10px 18px;align-items:end;flex-wrap:wrap;margin:0 0 14px}
+#rw-ldmap-v24 .control{display:flex;flex-direction:column;gap:5px}
+#rw-ldmap-v24 label{font-weight:700;font-size:.9rem}
+#rw-ldmap-v24 select,#rw-ldmap-v24 button{font:inherit;min-height:42px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:8px 11px}
+#rw-ldmap-v24 button{cursor:pointer}
+#rw-ldmap-v24 button:hover{background:var(--soft)}
+#rw-ldmap-v24 .grid{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+#rw-ldmap-v24 .mapbox{position:relative;height:600px;min-height:600px;border:1px solid var(--line);border-radius:8px;background:var(--soft);overflow:hidden}
+#rw-ldmap-v24 svg{display:block;width:100%;height:600px}
+#rw-ldmap-v24 .district{fill:#ece9df;stroke:#686861;stroke-width:1.15;vector-effect:non-scaling-stroke;cursor:pointer}
+#rw-ldmap-v24 .district.is-hover{fill:#e2d8b0;stroke:#222;stroke-width:3}
+#rw-ldmap-v24 .district.is-selected{fill:var(--accent);fill-opacity:.68;stroke:#222;stroke-width:3}
+#rw-ldmap-v24 .congress{fill:transparent;stroke:var(--federal);stroke-width:3.2;vector-effect:non-scaling-stroke;pointer-events:none}
+#rw-ldmap-v24 .congress.is-active{fill:#dfe6e2;fill-opacity:.45;stroke:#263d35;stroke-width:4}
+#rw-ldmap-v24 .mode-congress .district{display:none}
+#rw-ldmap-v24 .mode-congress .congress{pointer-events:auto;cursor:pointer;fill:#edf1ef;fill-opacity:.55;stroke-width:2.4}
+#rw-ldmap-v24 .mode-congress .congress.is-hover{fill:#dfe6e2;stroke:#222;stroke-width:4}
+#rw-ldmap-v24 .mode-state .congress{display:none}
+#rw-ldmap-v24 .panel{border:1px solid var(--line);border-radius:8px;padding:18px;background:#fff;min-width:0}
+#rw-ldmap-v24 .panel h2{font-size:1.35rem;margin:0 0 4px}
+#rw-ldmap-v24 .hint{color:var(--muted);line-height:1.45;margin:0 0 15px}
+#rw-ldmap-v24 .section-title{margin:16px 0 4px;padding-top:11px;border-top:2px solid var(--line);font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+#rw-ldmap-v24 .member{padding:12px 0;border-top:1px solid var(--line)}
+#rw-ldmap-v24 .member:first-of-type{border-top:0}
+#rw-ldmap-v24 .role{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+#rw-ldmap-v24 .name{font-size:1.03rem;font-weight:700;margin-top:3px}
+#rw-ldmap-v24 .name a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+#rw-ldmap-v24 .party{display:inline-block;margin-left:5px;font-size:.72rem;border:1px solid var(--line);border-radius:999px;padding:1px 6px;vertical-align:1px;color:var(--muted)}
+#rw-ldmap-v24 .crossnote{font-size:.8rem;color:var(--muted);line-height:1.4;margin:4px 0 8px}
+#rw-ldmap-v24 .source{font-size:.78rem;color:var(--muted);line-height:1.45;margin-top:18px}
+#rw-ldmap-v24 .hovercard{position:absolute;z-index:20;display:none;pointer-events:none;min-width:275px;max-width:360px;max-height:none!important;overflow:visible!important;padding:11px 13px;border:1px solid #555;border-radius:7px;background:#fff;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:13px;line-height:1.42}
+#rw-ldmap-v24 .hovercard.visible{display:block}
+#rw-ldmap-v24 .tip-title{font-weight:800;margin-bottom:5px}
+#rw-ldmap-v24 .tip-row{white-space:normal}
+#rw-ldmap-v24 .status{padding:18px;color:var(--muted)}
+@media(max-width:800px){
+  #rw-ldmap-v24 .controls{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+  #rw-ldmap-v24 .control{width:100%}
+  #rw-ldmap-v24 select,#rw-ldmap-v24 button{width:100%;min-height:46px}
+  #rw-ldmap-v24 .rw-case-toggle{width:100%;display:grid;grid-template-columns:1fr;gap:7px;justify-items:stretch;min-height:0}
+  #rw-ldmap-v24 .rw-case-toggle label{width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:.88rem;white-space:normal}
+  #rw-ldmap-v24 .rw-case-toggle input{width:auto;min-width:18px;min-height:18px}
+  #rw-ldmap-v24 .grid{grid-template-columns:1fr;gap:12px}
+  #rw-ldmap-v24 .mapbox{height:460px;min-height:460px;touch-action:manipulation}
+  #rw-ldmap-v24 svg{height:460px;touch-action:manipulation}
+  #rw-ldmap-v24 .panel{width:100%;padding:15px}
+  #rw-ldmap-v24 .district{touch-action:manipulation}
+  #rw-ldmap-v24 .rw-tax-legend{font-size:.80rem;gap:6px}
+}
+@media(max-width:480px){
+  #rw-ldmap-v24 .mapbox{height:400px;min-height:400px}
+  #rw-ldmap-v24 svg{height:400px}
+  #rw-ldmap-v24 h1{font-size:1.65rem}
+}
+@media(hover:none),(pointer:coarse){
+  #rw-ldmap-v24 .hovercard{display:none!important}
+  #rw-ldmap-v24 .district.is-hover{filter:none}
+}
+
+#rw-ldmap-v24 .rw-tax-legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 14px;font-size:.86rem;color:var(--muted)}
+#rw-ldmap-v24 .rw-swatch{display:inline-block;width:28px;height:14px;border:1px solid #aaa;border-radius:2px}
+#rw-ldmap-v24 .metric{padding:9px 0;border-top:1px solid var(--line)}
+#rw-ldmap-v24 .metric:first-child{border-top:0}
+#rw-ldmap-v24 .metric-label{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+#rw-ldmap-v24 .metric-value{font-size:1.08rem;font-weight:800;margin-top:2px}
+#rw-ldmap-v24 .district.is-hover{stroke:#111;stroke-width:3;filter:brightness(.93)}
+#rw-ldmap-v24 .district.is-selected{stroke:#111;stroke-width:4;filter:brightness(.88)}
+
+
+#rw-ldmap-v24 .rw-case-toggle{border:0;padding:0;margin:0;display:flex;gap:10px;align-items:center;justify-content:center;min-height:42px;flex:1 1 auto}
+#rw-ldmap-v24 .rw-case-toggle legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#rw-ldmap-v24 .rw-case-toggle label{display:flex;align-items:center;gap:4px;font-size:.84rem;font-weight:700;white-space:nowrap;cursor:pointer}
+#rw-ldmap-v24 .rw-case-toggle input{margin:0}
+
+  #rw-ldmap-v24 .vote-badge{display:inline-block;margin-left:5px;padding:1px 6px;border:1px solid #777;border-radius:999px;background:#fff;color:#333;font-size:.70rem;font-weight:800;line-height:1.45;text-decoration:none;white-space:nowrap;vertical-align:1px}
+  #rw-ldmap-v24 .vote-badge:hover{text-decoration:underline}
+  #rw-ldmap-v24 .vote-badge.yes{border-color:#1f6b3a;background:#1f6b3a;color:#fff}
+  #rw-ldmap-v24 .vote-badge.no{border-color:#8f1d1d;background:#8f1d1d;color:#fff}
+  #rw-ldmap-v24 .vote-badge.excused{border-color:#777;background:#777;color:#fff}
+
+/* v1.0.10 MOBILE CONTROL FIX
+   Keep this block AFTER the desktop .rw-case-toggle rules so Squarespace/mobile
+   cannot re-collapse the three model choices into a clipped horizontal row. */
+@media (max-width:800px){
+  #rw-ldmap-v24 .controls{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    width:100% !important;
+    gap:10px !important;
+    align-items:stretch !important;
+    overflow:visible !important;
+    height:auto !important;
+    max-height:none !important;
+  }
+  #rw-ldmap-v24 .controls > *{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    overflow:visible !important;
+  }
+  #rw-ldmap-v24 .rw-case-toggle{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-auto-rows:auto !important;
+    width:100% !important;
+    gap:7px !important;
+    padding:0 !important;
+    margin:0 !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+    flex:none !important;
+  }
+  #rw-ldmap-v24 .rw-case-toggle label{
+    display:flex !important;
+    width:100% !important;
+    min-height:46px !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:10px 12px !important;
+    align-items:center !important;
+    gap:8px !important;
+    border:1px solid var(--line) !important;
+    border-radius:6px !important;
+    background:#fff !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    line-height:1.25 !important;
+  }
+  #rw-ldmap-v24 .rw-case-toggle input[type="radio"]{
+    display:inline-block !important;
+    flex:0 0 auto !important;
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    margin:0 !important;
+  }
+}
+
+</style>
+
+<div id="rw-ldmap-v24" class="mode-state">
+  <div class="kicker">Repatriate Washington · Interactive District Map</div>
+  <h1>Estimated Legislative-District Impact of Washington’s Millionaire Tax</h1>
+  <p class="intro">Demonstration visualization. Red districts show estimated net outflow; green districts show estimated net inflow. Hover for the district’s net impact and state legislators; click for additional district detail. Compare Model 1 (equal 1/49 allocation), Model 2 (illustrative demographic/program allocation), and Model 3 (Model 2 allocations × 1.7 Local $ Multiplier).</p>
+
+  <div class="controls">
+    <div class="control" style="display:none">
+      <label for="rwMapMode">Map view</label>
+      <select id="rwMapMode">
+        <option value="state" selected>State Representatives Only</option>
+        <option value="congress">U.S. Representatives Only</option>
+        <option value="both">State + U.S. Representatives</option>
+      </select>
+    </div>
+    <div class="control">
+      <label id="rwDistrictLabel" for="rwDistrictSelect">Jump to legislative district</label>
+      <select id="rwDistrictSelect"><option value="">Choose…</option></select>
+    </div>
+    <fieldset class="rw-case-toggle" aria-label="Estimate model">
+      <legend>Estimate model</legend>
+      <label><input type="radio" name="rwFiscalCase" value="model1"> Model 1 · Equal Share Model</label>
+      <label><input type="radio" name="rwFiscalCase" value="model2" checked> Model 2 · Demographic Model</label>
+      <label><input type="radio" name="rwFiscalCase" value="model3"> Model 3 · Standard Multiplier Model</label>
+    </fieldset>
+    <button id="rwResetBtn" type="button">Show all Washington</button>
+  </div>
+
+
+  <div class="rw-tax-legend" aria-label="Estimated net impact map legend">
+    <span><strong>Estimated net impact:</strong></span>
+    <span class="rw-swatch" style="background:#8f1d1d"></span><span>Greater net outflow</span>
+    <span class="rw-swatch" style="background:#f3eee6"></span><span>Near balance</span>
+    <span class="rw-swatch" style="background:#1f6b3a"></span><span>Greater net inflow</span>
+  </div>
+
+  <div class="grid">
+    <div class="mapbox" id="rwMapBox">
+      <svg id="rwMapSvg" viewBox="0 0 1000 700" role="img" aria-label="Interactive map of Washington legislative and congressional districts"></svg>
+      <div id="rwHoverCard" class="hovercard" data-map-version="2.3.9" aria-hidden="true"></div>
+    </div>
+    <aside class="panel" aria-live="polite">
+      <h2 id="rwPanelTitle">Select a district</h2>
+      <p class="hint" id="rwPanelHint">Hover with a mouse, or tap/click a district on the map.</p>
+      <div id="rwPanelMembers"></div>
+      <div class="source">
+        <strong>Draft analytical Models — not an official district fiscal estimate.</strong><br><br>
+        Models 1–3 are analytical scenarios, not forecasts of future district appropriations. Model 1 divides modeled benefits equally among 49 LDs. Model 2 uses demographic/program allocation weights. Model 3 applies a $1.7 standard local multiplier to each Model 2 allocation as an illustration; it is not an additional appropriation. LD14 and LD29 use comparable-district millionaire-count and average-income proxy inputs.<br><br>
+        <span style="font-size:.78rem;color:#666">SB 6346 vote badges show each legislator’s final chamber vote; click a badge for the official Washington Legislature roll call.</span><br><br><strong>Sources:</strong><br>
+        <strong>Millionaires Tax statewide revenue:</strong> Washington Department of Revenue / Final Fiscal-note Revenue Estimates<br>
+        <strong>Millionaires Tax district geography:</strong> Budget &amp; Policy Center and IRS data.<br>
+        <strong>WFTC geography:</strong> Washington Department of Revenue, Working Families Tax Credit geographic reporting; U.S. Census Bureau ACS 2024 5-Year estimates<br>
+        <strong>K–12 geography:</strong> U.S. Census Bureau, 2024 ACS 5-Year, Table B14002; Washington OSPI administrative enrollment used as an external benchmark<br>
+        <strong>Health/human-services geography:</strong> U.S. Census Bureau, 2024 ACS 5-Year, Table C27007; Washington Health Care Authority Apple Health enrollment used as an external benchmark<br>
+        <strong>Higher-education geography:</strong> U.S. Census Bureau, 2024 ACS 5-Year, Table B14004<br>
+        <strong>Fair Start geography:</strong> U.S. Census Bureau, 2024 ACS 5-Year, Table B09001<br>
+        <strong>Legislative-district boundaries:</strong> Washington State OFM/WSDOT legislative-district geography, including the 2024 remedial map<br><br>
+        <strong>Model 1 · Equal Share Model</strong><br>
+        <strong>Model 2 · Demographic Model</strong><br>
+        <strong>Model 3 · Standard Multiplier Model</strong>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const ROOT = document.getElementById('rw-ldmap-v24');
+  if (!ROOT || ROOT.dataset.ready === '1') return;
+  ROOT.dataset.ready = '1';
+
+  const FISCAL_DATA={"2029":{"1":{"area":"Bothell, Woodinville","millionaires":576,"avgMillionaireIncome":2248390,"taxStatus":"OBSERVABLE","model2Benefit":40737629.02,"model1Benefit":51732653.06,"model1Net":-17269771.02,"health":7214778.0,"model2Net":-28264795.06,"fairStart":3154013.8,"k12":20087581.41,"model3Benefit":69253969.34,"higherEd":7358539.61,"wftc":2922716.2,"tax":69002424.08,"model3Net":251545.26},"2":{"area":"Graham, Eatonville","millionaires":52,"avgMillionaireIncome":1757122,"taxStatus":"OBSERVABLE","model2Benefit":52626761.83,"model1Benefit":51732653.06,"model1Net":47954663.16,"health":15300190.04,"model2Net":48848771.93,"fairStart":3006437.53,"k12":22908713.23,"model3Benefit":89465495.11,"higherEd":7780248.98,"wftc":3631172.05,"tax":3777989.9,"model3Net":85687505.21},"3":{"area":"Spokane","millionaires":211,"avgMillionaireIncome":2069929,"taxStatus":"OBSERVABLE","model2Benefit":56109730.64,"model1Benefit":51732653.06,"model1Net":30069134.4,"health":19888769.79,"model2Net":34446211.97,"fairStart":2344684.31,"k12":18029979.79,"model3Benefit":95386542.08,"higherEd":8204269.09,"wftc":7642027.66,"tax":21663518.67,"model3Net":73723023.42},"4":{"area":"Spokane Valley","millionaires":142,"avgMillionaireIncome":2370917,"taxStatus":"OBSERVABLE","model2Benefit":53879643.77,"model1Benefit":51732653.06,"model1Net":33052041.51,"health":18891853.31,"model2Net":35199032.22,"fairStart":2966813.45,"k12":19674002.55,"model3Benefit":91595394.4,"higherEd":6227434.22,"wftc":6119540.24,"tax":18680611.55,"model3Net":72914782.85},"5":{"area":"Issaquah, Enumclaw","millionaires":692,"avgMillionaireIncome":1941904,"taxStatus":"OBSERVABLE","model2Benefit":41197859.51,"model1Benefit":51732653.06,"model1Net":-10814035.13,"health":7280063.64,"model2Net":-21348828.68,"fairStart":2797709.14,"k12":23552473.99,"model3Benefit":70036361.17,"higherEd":4903382.34,"wftc":2664230.4,"tax":62546688.19,"model3Net":7489672.98},"6":{"area":"Spokane, Airway Heights","millionaires":143,"avgMillionaireIncome":2087287,"taxStatus":"OBSERVABLE","model2Benefit":60864497.78,"model1Benefit":51732653.06,"model1Net":36812550.23,"health":20963361.89,"model2Net":45944394.95,"fairStart":3009557.53,"k12":22879706.56,"model3Benefit":103469646.22,"higherEd":7390889.92,"wftc":6620981.87,"tax":14920102.83,"model3Net":88549543.39},"7":{"area":"Wenatchee, Colville","millionaires":71,"avgMillionaireIncome":2560133,"taxStatus":"OBSERVABLE","model2Benefit":58442512.36,"model1Benefit":51732653.06,"model1Net":41103184.42,"health":22166619.12,"model2Net":47813043.71,"fairStart":2651380.87,"k12":22043191.86,"model3Benefit":99352271.01,"higherEd":4065740.45,"wftc":7515580.06,"tax":10629468.65,"model3Net":88722802.36},"8":{"area":"Kennewick","millionaires":195,"avgMillionaireIncome":2493558,"taxStatus":"OBSERVABLE","model2Benefit":59939419.71,"model1Benefit":51732653.06,"model1Net":23784810.56,"health":17899702.2,"model2Net":31991577.21,"fairStart":3183029.85,"k12":26411969.46,"model3Benefit":101897013.5,"higherEd":7264954.8,"wftc":5179763.41,"tax":27947842.5,"model3Net":73949171.0},"9":{"area":"Pullman, Ritzville","millionaires":223,"avgMillionaireIncome":2253475,"taxStatus":"OBSERVABLE","model2Benefit":68095477.88,"model1Benefit":51732653.06,"model1Net":24909358.25,"health":15964006.8,"model2Net":41272183.07,"fairStart":2637964.85,"k12":18551164.01,"model3Benefit":115762312.4,"higherEd":23971577.94,"wftc":6970764.28,"tax":26823294.81,"model3Net":88939017.59},"10":{"area":"Whidbey Island, La Conner","millionaires":165,"avgMillionaireIncome":2389044,"taxStatus":"OBSERVABLE","model2Benefit":45906416.03,"model1Benefit":51732653.06,"model1Net":29739295.73,"health":13426444.53,"model2Net":23913058.69,"fairStart":2349052.32,"k12":18891758.37,"model3Benefit":78040907.24,"higherEd":6208948.33,"wftc":5030212.49,"tax":21993357.33,"model3Net":56047549.91},"11":{"area":"Renton, Tukwila","millionaires":165,"avgMillionaireIncome":1920078,"taxStatus":"OBSERVABLE","model2Benefit":49294440.76,"model1Benefit":51732653.06,"model1Net":37164644.97,"health":15257301.67,"model2Net":34726432.67,"fairStart":2934989.4,"k12":17919567.33,"model3Benefit":83800549.28,"higherEd":8733427.69,"wftc":4449154.67,"tax":14568008.09,"model3Net":69232541.19},"12":{"area":"Monroe, Chelan","millionaires":358,"avgMillionaireIncome":1748820,"taxStatus":"OBSERVABLE","model2Benefit":48984958.28,"model1Benefit":51732653.06,"model1Net":26007850.79,"health":13342573.93,"model2Net":23260156.01,"fairStart":3029213.57,"k12":22834793.02,"model3Benefit":83274429.07,"higherEd":5436007.05,"wftc":4342370.71,"tax":25724802.27,"model3Net":57549626.8},"13":{"area":"Moses Lake, Ellensburg","millionaires":128,"avgMillionaireIncome":2070139,"taxStatus":"OBSERVABLE","model2Benefit":70615478.59,"model1Benefit":51732653.06,"model1Net":38588223.46,"health":22321493.81,"model2Net":57471048.99,"fairStart":3179909.85,"k12":27139007.41,"model3Benefit":120046313.61,"higherEd":11058028.36,"wftc":6917039.16,"tax":13144429.6,"model3Net":106901884.01},"14":{"area":"Yakima, Pasco","millionaires":50,"avgMillionaireIncome":1757122,"taxStatus":"COMPARABLE_LD_PROXY","model2Benefit":85981741.72,"model1Benefit":51732653.06,"model1Net":48099970.46,"health":34202527.17,"model2Net":82349059.12,"fairStart":3749310.89,"k12":35186016.92,"model3Benefit":146168960.92,"higherEd":5609312.27,"wftc":7234574.47,"tax":3632682.6,"model3Net":142536278.32},"15":{"area":"Yakima, Naches","millionaires":167,"avgMillionaireIncome":2721976,"taxStatus":"OBSERVABLE","model2Benefit":62730048.28,"model1Benefit":51732653.06,"model1Net":24137351.23,"health":21429892.12,"model2Net":35134746.44,"fairStart":3116573.73,"k12":25567033.46,"model3Benefit":106641082.07,"higherEd":6725397.88,"wftc":5891151.09,"tax":27595301.83,"model3Net":79045780.24},"16":{"area":"Richland, Walla Walla","millionaires":97,"avgMillionaireIncome":2407421,"taxStatus":"OBSERVABLE","model2Benefit":61440339.54,"model1Benefit":51732653.06,"model1Net":38632168.96,"health":18639764.96,"model2Net":48339855.44,"fairStart":3358374.17,"k12":24912980.01,"model3Benefit":104448577.21,"higherEd":9060396.87,"wftc":5468823.52,"tax":13100484.1,"model3Net":91348093.11},"17":{"area":"Camas, Vancouver","millionaires":383,"avgMillionaireIncome":2495905,"taxStatus":"OBSERVABLE","model2Benefit":49452276.15,"model1Benefit":51732653.06,"model1Net":-3246034.86,"health":13728569.31,"model2Net":-5526411.77,"fairStart":2466676.53,"k12":22366943.63,"model3Benefit":84068869.45,"higherEd":6546315.82,"wftc":4343770.85,"tax":54978687.92,"model3Net":29090181.53},"18":{"area":"Battle Ground, Vancouver","millionaires":188,"avgMillionaireIncome":1967078,"taxStatus":"OBSERVABLE","model2Benefit":51131927.67,"model1Benefit":51732653.06,"model1Net":34286047.75,"health":14689268.95,"model2Net":33685322.36,"fairStart":2603332.79,"k12":23443932.93,"model3Benefit":86924277.05,"higherEd":6504722.57,"wftc":3890670.44,"tax":17446605.31,"model3Net":69477671.73},"19":{"area":"Longview, Aberdeen","millionaires":61,"avgMillionaireIncome":2252216,"taxStatus":"OBSERVABLE","model2Benefit":57147042.43,"model1Benefit":51732653.06,"model1Net":44402708.89,"health":21724392.3,"model2Net":49817098.26,"fairStart":2544364.68,"k12":19596339.55,"model3Benefit":97149972.13,"higherEd":5927038.5,"wftc":7354907.4,"tax":7329944.17,"model3Net":89820027.96},"20":{"area":"Centralia, Woodland","millionaires":206,"avgMillionaireIncome":2724764,"taxStatus":"OBSERVABLE","model2Benefit":53978410.58,"model1Benefit":51732653.06,"model1Net":17637826.74,"health":16518696.47,"model2Net":19883584.25,"fairStart":3340902.14,"k12":23144509.32,"model3Benefit":91763297.98,"higherEd":5668236.04,"wftc":5306066.6,"tax":34094826.32,"model3Net":57668471.66},"21":{"area":"Edmonds, Mukilteo","millionaires":259,"avgMillionaireIncome":2014876,"taxStatus":"OBSERVABLE","model2Benefit":46107276.12,"model1Benefit":51732653.06,"model1Net":26509212.25,"health":12351375.89,"model2Net":20883835.31,"fairStart":2744669.05,"k12":19021820.5,"model3Benefit":78382369.4,"higherEd":7598856.19,"wftc":4390554.5,"tax":25223440.81,"model3Net":53158928.59},"22":{"area":"Olympia, Lacey","millionaires":167,"avgMillionaireIncome":2021887,"taxStatus":"OBSERVABLE","model2Benefit":48241815.3,"model1Benefit":51732653.06,"model1Net":35356536.2,"health":13447412.18,"model2Net":31865698.44,"fairStart":2557156.7,"k12":18201212.67,"model3Benefit":82011086.02,"higherEd":8299009.27,"wftc":5737024.49,"tax":16376116.86,"model3Net":65634969.16},"23":{"area":"Bainbridge Island, Poulsbo","millionaires":346,"avgMillionaireIncome":2398803,"taxStatus":"OBSERVABLE","model2Benefit":42274699.86,"model1Benefit":51732653.06,"model1Net":5289228.32,"health":11202920.48,"model2Net":-4168724.88,"fairStart":2652940.88,"k12":17777341.12,"model3Benefit":71866989.76,"higherEd":6391496.49,"wftc":4250000.9,"tax":46443424.74,"model3Net":25423565.02},"24":{"area":"Port Angeles, Forks","millionaires":101,"avgMillionaireIncome":2531164,"taxStatus":"OBSERVABLE","model2Benefit":48297211.56,"model1Benefit":51732653.06,"model1Net":36892626.89,"health":18878986.79,"model2Net":33457185.39,"fairStart":1944075.57,"k12":15756231.75,"model3Benefit":82105259.65,"higherEd":4188209.47,"wftc":7529707.97,"tax":14840026.17,"model3Net":67265233.49},"25":{"area":"Puyallup, South Hill","millionaires":106,"avgMillionaireIncome":2255383,"taxStatus":"OBSERVABLE","model2Benefit":51975342.99,"model1Benefit":51732653.06,"model1Net":38963158.96,"health":14138391.58,"model2Net":39205848.89,"fairStart":3037013.58,"k12":24081143.8,"model3Benefit":88358083.09,"higherEd":6847866.9,"wftc":3870927.13,"tax":12769494.1,"model3Net":75588588.98},"26":{"area":"Gig Harbor, Bremerton","millionaires":326,"avgMillionaireIncome":1814359,"taxStatus":"OBSERVABLE","model2Benefit":42887828.56,"model1Benefit":51732653.06,"model1Net":26257014.2,"health":11776195.11,"model2Net":17412189.69,"fairStart":2414884.44,"k12":18804738.38,"model3Benefit":72909308.55,"higherEd":5658993.1,"wftc":4233017.53,"tax":25475638.86,"model3Net":47433669.68},"27":{"area":"Tacoma","millionaires":209,"avgMillionaireIncome":2308612,"taxStatus":"OBSERVABLE","model2Benefit":50947486.17,"model1Benefit":51732653.06,"model1Net":25487520.67,"health":16680242.69,"model2Net":24702353.78,"fairStart":2492572.58,"k12":17371247.85,"model3Benefit":86610726.5,"higherEd":7957020.31,"wftc":6446402.75,"tax":26245132.39,"model3Net":60365594.1},"28":{"area":"Lakewood, University Place","millionaires":121,"avgMillionaireIncome":2125425,"taxStatus":"OBSERVABLE","model2Benefit":50357292.57,"model1Benefit":51732653.06,"model1Net":38665122.88,"health":13506026.29,"model2Net":37289762.38,"fairStart":3272262.02,"k12":19382064.53,"model3Benefit":85607397.36,"higherEd":8880159.44,"wftc":5316780.29,"tax":13067530.18,"model3Net":72539867.18},"29":{"area":"Parkland, Spanaway","millionaires":50,"avgMillionaireIncome":1757122,"taxStatus":"COMPARABLE_LD_PROXY","model2Benefit":61238777.32,"model1Benefit":51732653.06,"model1Net":48099970.46,"health":23906934.13,"model2Net":57606094.72,"fairStart":3110021.72,"k12":21777453.4,"model3Benefit":104105921.45,"higherEd":6823604.17,"wftc":5620763.9,"tax":3632682.6,"model3Net":100473238.85},"30":{"area":"Federal Way, Auburn","millionaires":80,"avgMillionaireIncome":1850270,"taxStatus":"OBSERVABLE","model2Benefit":59214483.34,"model1Benefit":51732653.06,"model1Net":45205280.12,"health":21112041.59,"model2Net":52687110.4,"fairStart":3175229.84,"k12":22893742.05,"model3Benefit":100664621.67,"higherEd":7247624.27,"wftc":4785845.58,"tax":6527372.94,"model3Net":94137248.73},"31":{"area":"Bonney Lake","millionaires":177,"avgMillionaireIncome":2752776,"taxStatus":"OBSERVABLE","model2Benefit":49251686.26,"model1Benefit":51732653.06,"model1Net":21961800.79,"health":11437376.93,"model2Net":19480833.99,"fairStart":3229517.94,"k12":25051463.43,"model3Benefit":83727866.65,"higherEd":6364923.02,"wftc":3168404.94,"tax":29770852.27,"model3Net":53957014.38},"32":{"area":"Shoreline, Lynnwood","millionaires":289,"avgMillionaireIncome":2582842,"taxStatus":"OBSERVABLE","model2Benefit":48062833.49,"model1Benefit":51732653.06,"model1Net":7836446.42,"health":14168889.98,"model2Net":4166626.84,"fairStart":2690380.95,"k12":17475110.41,"model3Benefit":81706816.93,"higherEd":8357933.05,"wftc":5370519.1,"tax":43896206.64,"model3Net":37810610.28},"33":{"area":"Kent, Des Moines","millionaires":133,"avgMillionaireIncome":1944400,"taxStatus":"OBSERVABLE","model2Benefit":57433268.43,"model1Benefit":51732653.06,"model1Net":39679540.77,"health":20686017.05,"model2Net":45380156.14,"fairStart":3111893.72,"k12":20110973.88,"model3Benefit":97636556.34,"higherEd":7990525.98,"wftc":5533857.8,"tax":12053112.29,"model3Net":85583444.04},"34":{"area":"West Seattle, Vashon Island","millionaires":430,"avgMillionaireIncome":2260396,"taxStatus":"OBSERVABLE","model2Benefit":45695815.68,"model1Benefit":51732653.06,"model1Net":-274975.96,"health":14191287.24,"model2Net":-6311813.34,"fairStart":2732813.02,"k12":16374728.65,"model3Benefit":77682886.65,"higherEd":7746743.31,"wftc":4650243.46,"tax":52007629.02,"model3Net":25675257.63},"35":{"area":"Shelton, Rochester","millionaires":117,"avgMillionaireIncome":2104470,"taxStatus":"OBSERVABLE","model2Benefit":50363196.73,"model1Benefit":51732653.06,"model1Net":39332376.57,"health":15588018.7,"model2Net":37962920.23,"fairStart":2554348.7,"k12":22093719.59,"model3Benefit":85617434.44,"higherEd":5865803.99,"wftc":4261305.75,"tax":12400276.5,"model3Net":73217157.94},"36":{"area":"Seattle (Ballard, Queen Anne)","millionaires":1260,"avgMillionaireIncome":1861920,"taxStatus":"OBSERVABLE","model2Benefit":29161641.41,"model1Benefit":51732653.06,"model1Net":-52482071.89,"health":5302432.95,"model2Net":-75053083.54,"fairStart":2174956.0,"k12":10466726.55,"model3Benefit":49574790.4,"higherEd":7256867.22,"wftc":3960658.7,"tax":104214724.95,"model3Net":-54639934.55},"37":{"area":"Seattle (Central District, Beacon Hill)","millionaires":498,"avgMillionaireIncome":1891798,"taxStatus":"OBSERVABLE","model2Benefit":52409723.9,"model1Benefit":51732653.06,"model1Net":9115207.0,"health":16892301.89,"model2Net":9792277.84,"fairStart":2554660.7,"k12":15946178.61,"model3Benefit":89096530.63,"higherEd":10761098.76,"wftc":6255483.96,"tax":42617446.06,"model3Net":46479084.57},"38":{"area":"Everett, Marysville","millionaires":87,"avgMillionaireIncome":1959569,"taxStatus":"OBSERVABLE","model2Benefit":52653520.47,"model1Benefit":51732653.06,"model1Net":43721647.28,"health":18010258.9,"model2Net":44642514.69,"fairStart":2739365.04,"k12":18997492.33,"model3Benefit":89510984.79,"higherEd":7531844.83,"wftc":5374559.37,"tax":8011005.78,"model3Net":81499979.01},"39":{"area":"Sedro-Woolley, Lake Stevens","millionaires":120,"avgMillionaireIncome":1985243,"taxStatus":"OBSERVABLE","model2Benefit":49382807.85,"model1Benefit":51732653.06,"model1Net":40387347.76,"health":13815299.14,"model2Net":38037502.55,"fairStart":3183341.85,"k12":22482034.58,"model3Benefit":83950773.35,"higherEd":5957078.07,"wftc":3945054.2,"tax":11345305.3,"model3Net":72605468.04},"40":{"area":"Anacortes, San Juan Islands","millionaires":273,"avgMillionaireIncome":2479751,"taxStatus":"OBSERVABLE","model2Benefit":56076952.51,"model1Benefit":51732653.06,"model1Net":12967377.77,"health":13953018.48,"model2Net":17311677.22,"fairStart":1931283.55,"k12":16894041.47,"model3Benefit":95330819.27,"higherEd":17210363.65,"wftc":6088245.36,"tax":38765275.3,"model3Net":56565543.98},"41":{"area":"Mercer Island, Sammamish","millionaires":2660,"avgMillionaireIncome":2224486,"taxStatus":"OBSERVABLE","model2Benefit":40598399.81,"model1Benefit":51732653.06,"model1Net":-260822773.87,"health":5594073.91,"model2Net":-271957027.12,"fairStart":2223940.09,"k12":24151321.21,"model3Benefit":69017279.68,"higherEd":6083013.2,"wftc":2546051.41,"tax":312555426.93,"model3Net":-243538147.25},"42":{"area":"Bellingham, Lynden","millionaires":168,"avgMillionaireIncome":2563118,"taxStatus":"OBSERVABLE","model2Benefit":54351154.43,"model1Benefit":51732653.06,"model1Net":26533112.12,"health":17738155.98,"model2Net":29151613.49,"fairStart":2633908.84,"k12":19254809.49,"model3Benefit":92396962.53,"higherEd":8020565.55,"wftc":6703714.57,"tax":25199540.94,"model3Net":67197421.59},"43":{"area":"Seattle (Capitol Hill, University District)","millionaires":1502,"avgMillionaireIncome":2736421,"taxStatus":"OBSERVABLE","model2Benefit":38544876.62,"model1Benefit":51732653.06,"model1Net":-198541814.13,"health":7100409.0,"model2Net":-211729590.58,"fairStart":905737.67,"k12":4277079.12,"model3Benefit":65526290.25,"higherEd":20488143.03,"wftc":5773507.8,"tax":250274467.19,"model3Net":-184748176.94},"44":{"area":"Snohomish, Mill Creek","millionaires":319,"avgMillionaireIncome":1680023,"taxStatus":"OBSERVABLE","model2Benefit":42907343.29,"model1Benefit":51732653.06,"model1Net":30916241.38,"health":7756124.62,"model2Net":22090931.61,"fairStart":3107213.71,"k12":22538176.51,"model3Benefit":72942483.58,"higherEd":6616793.28,"wftc":2889035.17,"tax":20816411.68,"model3Net":52126071.9},"45":{"area":"Redmond, Kirkland","millionaires":2004,"avgMillionaireIncome":2002629,"taxStatus":"OBSERVABLE","model2Benefit":41012989.58,"model1Benefit":51732653.06,"model1Net":-141077350.43,"health":6465184.49,"model2Net":-151797013.91,"fairStart":2846693.23,"k12":22073134.22,"model3Benefit":69722082.29,"higherEd":6957626.87,"wftc":2670350.77,"tax":192810003.49,"model3Net":-123087921.21},"46":{"area":"Seattle (Green Lake, Lake City)","millionaires":788,"avgMillionaireIncome":1948472,"taxStatus":"OBSERVABLE","model2Benefit":47008430.67,"model1Benefit":51732653.06,"model1Net":-19987682.91,"health":8673459.34,"model2Net":-24711905.31,"fairStart":2416756.44,"k12":11059023.88,"model3Benefit":79914332.14,"higherEd":19650501.14,"wftc":5208689.87,"tax":71720335.97,"model3Net":8193996.16},"47":{"area":"Auburn, Covington","millionaires":137,"avgMillionaireIncome":1912420,"taxStatus":"OBSERVABLE","model2Benefit":56599571.74,"model1Benefit":51732653.06,"model1Net":39737468.16,"health":18146548.63,"model2Net":44604386.84,"fairStart":2910029.35,"k12":23562766.67,"model3Benefit":96219271.96,"higherEd":8357933.05,"wftc":3622294.04,"tax":11995184.9,"model3Net":84224087.06},"48":{"area":"Bellevue, Redmond","millionaires":2371,"avgMillionaireIncome":4253085,"taxStatus":"OBSERVABLE","model2Benefit":36713109.12,"model1Benefit":51732653.06,"model1Net":-688415310.28,"health":6443263.76,"model2Net":-703434854.22,"fairStart":2427676.46,"k12":16462684.33,"model3Benefit":62412285.5,"higherEd":7680887.32,"wftc":3698597.24,"tax":740147963.34,"model3Net":-677735677.84},"49":{"area":"Vancouver","millionaires":192,"avgMillionaireIncome":3018896,"taxStatus":"OBSERVABLE","model2Benefit":56573851.72,"model1Benefit":51732653.06,"model1Net":14535752.0,"health":20187082.28,"model2Net":19376950.65,"fairStart":2700364.96,"k12":20519874.24,"model3Benefit":96175547.92,"higherEd":6563646.34,"wftc":6602883.89,"tax":37196901.07,"model3Net":58978646.85}},"2030":{"1":{"area":"Bothell, Woodinville","millionaires":576,"avgMillionaireIncome":2248390,"taxStatus":"OBSERVABLE","model2Benefit":41946394.88,"model1Benefit":52787755.1,"model1Net":-42659630.61,"health":7214778.0,"model2Net":-53500990.84,"fairStart":4362779.65,"k12":20087581.41,"model3Benefit":71308871.29,"higherEd":7358539.61,"wftc":2922716.2,"tax":95447385.72,"model3Net":-24138514.43},"2":{"area":"Graham, Eatonville","millionaires":52,"avgMillionaireIncome":1757122,"taxStatus":"OBSERVABLE","model2Benefit":53778969.54,"model1Benefit":52787755.1,"model1Net":47561862.47,"health":15300190.04,"model2Net":48553076.91,"fairStart":4158645.24,"k12":22908713.23,"model3Benefit":91424248.22,"higherEd":7780248.98,"wftc":3631172.05,"tax":5225892.63,"model3Net":86198355.59},"3":{"area":"Spokane","millionaires":211,"avgMillionaireIncome":2069929,"taxStatus":"OBSERVABLE","model2Benefit":57008323.51,"model1Benefit":52787755.1,"model1Net":22821761.16,"health":19888769.79,"model2Net":27042329.57,"fairStart":3243277.19,"k12":18029979.79,"model3Benefit":96914149.97,"higherEd":8204269.09,"wftc":7642027.66,"tax":29965993.94,"model3Net":66948156.03},"4":{"area":"Spokane Valley","millionaires":142,"avgMillionaireIncome":2370917,"taxStatus":"OBSERVABLE","model2Benefit":55016665.67,"model1Benefit":52787755.1,"model1Net":26947858.03,"health":18891853.31,"model2Net":29176768.61,"fairStart":4103835.36,"k12":19674002.55,"model3Benefit":93528331.65,"higherEd":6227434.22,"wftc":6119540.24,"tax":25839897.07,"model3Net":67688434.58},"5":{"area":"Issaquah, Enumclaw","millionaires":692,"avgMillionaireIncome":1941904,"taxStatus":"OBSERVABLE","model2Benefit":42270072.73,"model1Benefit":52787755.1,"model1Net":-33729754.29,"health":7280063.64,"model2Net":-44247436.66,"fairStart":3869922.36,"k12":23552473.99,"model3Benefit":71859123.64,"higherEd":4903382.34,"wftc":2664230.4,"tax":86517509.39,"model3Net":-14658385.75},"6":{"area":"Spokane, Airway Heights","millionaires":143,"avgMillionaireIncome":2087287,"taxStatus":"OBSERVABLE","model2Benefit":62017901.22,"model1Benefit":52787755.1,"model1Net":32149569.87,"health":20963361.89,"model2Net":41379715.99,"fairStart":4162960.98,"k12":22879706.56,"model3Benefit":105430432.07,"higherEd":7390889.92,"wftc":6620981.87,"tax":20638185.23,"model3Net":84792246.84},"7":{"area":"Wenatchee, Colville","millionaires":71,"avgMillionaireIncome":2560133,"taxStatus":"OBSERVABLE","model2Benefit":59458645.73,"model1Benefit":52787755.1,"model1Net":38084576.09,"health":22166619.12,"model2Net":44755466.71,"fairStart":3667514.24,"k12":22043191.86,"model3Benefit":101079697.73,"higherEd":4065740.45,"wftc":7515580.06,"tax":14703179.02,"model3Net":86376518.72},"8":{"area":"Kennewick","millionaires":195,"avgMillionaireIncome":2493558,"taxStatus":"OBSERVABLE","model2Benefit":61159305.87,"model1Benefit":52787755.1,"model1Net":14128990.01,"health":17899702.2,"model2Net":22500540.78,"fairStart":4402916.01,"k12":26411969.46,"model3Benefit":103970819.98,"higherEd":7264954.8,"wftc":5179763.41,"tax":38658765.09,"model3Net":65312054.89},"9":{"area":"Pullman, Ritzville","millionaires":223,"avgMillionaireIncome":2253475,"taxStatus":"OBSERVABLE","model2Benefit":69106469.6,"model1Benefit":52787755.1,"model1Net":15684517.06,"health":15964006.8,"model2Net":32003231.56,"fairStart":3648956.57,"k12":18551164.01,"model3Benefit":117480998.32,"higherEd":23971577.94,"wftc":6970764.28,"tax":37103238.05,"model3Net":80377760.28},"10":{"area":"Whidbey Island, La Conner","millionaires":165,"avgMillionaireIncome":2389044,"taxStatus":"OBSERVABLE","model2Benefit":46806682.93,"model1Benefit":52787755.1,"model1Net":22365512.86,"health":13426444.53,"model2Net":16384440.68,"fairStart":3249319.22,"k12":18891758.37,"model3Benefit":79571360.97,"higherEd":6208948.33,"wftc":5030212.49,"tax":30422242.24,"model3Net":49149118.73},"11":{"area":"Renton, Tukwila","millionaires":165,"avgMillionaireIncome":1920078,"taxStatus":"OBSERVABLE","model2Benefit":50419266.19,"model1Benefit":52787755.1,"model1Net":32636603.81,"health":15257301.67,"model2Net":30268114.9,"fairStart":4059814.83,"k12":17919567.33,"model3Benefit":85712752.53,"higherEd":8733427.69,"wftc":4449154.67,"tax":20151151.29,"model3Net":65561601.24},"12":{"area":"Monroe, Chelan","millionaires":358,"avgMillionaireIncome":1748820,"taxStatus":"OBSERVABLE","model2Benefit":50145894.84,"model1Benefit":52787755.1,"model1Net":17204003.41,"health":13342573.93,"model2Net":14562143.14,"fairStart":4190150.13,"k12":22834793.02,"model3Benefit":85248021.22,"higherEd":5436007.05,"wftc":4342370.71,"tax":35583751.69,"model3Net":49664269.53},"13":{"area":"Moses Lake, Ellensburg","millionaires":128,"avgMillionaireIncome":2070139,"taxStatus":"OBSERVABLE","model2Benefit":71834169.02,"model1Benefit":52787755.1,"model1Net":34605764.27,"health":22321493.81,"model2Net":53652178.19,"fairStart":4398600.28,"k12":27139007.41,"model3Benefit":122118087.34,"higherEd":11058028.36,"wftc":6917039.16,"tax":18181990.83,"model3Net":103936096.51},"14":{"area":"Yakima, Pasco","millionaires":50,"avgMillionaireIncome":1757122,"taxStatus":"COMPARABLE_LD_PROXY","model2Benefit":87418653.31,"model1Benefit":52787755.1,"model1Net":47762858.34,"health":34202527.17,"model2Net":82393756.55,"fairStart":5186222.48,"k12":35186016.92,"model3Benefit":148611710.62,"higherEd":5609312.27,"wftc":7234574.47,"tax":5024896.76,"model3Net":143586813.86},"15":{"area":"Yakima, Naches","millionaires":167,"avgMillionaireIncome":2721976,"taxStatus":"OBSERVABLE","model2Benefit":63924465.34,"model1Benefit":52787755.1,"model1Net":14616640.78,"health":21429892.12,"model2Net":25753351.02,"fairStart":4310990.79,"k12":25567033.46,"model3Benefit":108671591.08,"higherEd":6725397.88,"wftc":5891151.09,"tax":38171114.32,"model3Net":70500476.76},"16":{"area":"Richland, Walla Walla","millionaires":97,"avgMillionaireIncome":2407421,"taxStatus":"OBSERVABLE","model2Benefit":62727425.86,"model1Benefit":52787755.1,"model1Net":34666551.74,"health":18639764.96,"model2Net":44606222.5,"fairStart":4645460.5,"k12":24912980.01,"model3Benefit":106636623.96,"higherEd":9060396.87,"wftc":5468823.52,"tax":18121203.36,"model3Net":88515420.6},"17":{"area":"Camas, Vancouver","millionaires":383,"avgMillionaireIncome":2495905,"taxStatus":"OBSERVABLE","model2Benefit":50397622.16,"model1Benefit":52787755.1,"model1Net":-23261341.75,"health":13728569.31,"model2Net":-25651474.7,"fairStart":3412022.55,"k12":22366943.63,"model3Benefit":85675957.67,"higherEd":6546315.82,"wftc":4343770.85,"tax":76049096.86,"model3Net":9626860.81},"18":{"area":"Battle Ground, Vancouver","millionaires":188,"avgMillionaireIncome":1967078,"taxStatus":"OBSERVABLE","model2Benefit":52129646.76,"model1Benefit":52787755.1,"model1Net":28654793.27,"health":14689268.95,"model2Net":27996684.93,"fairStart":3601051.87,"k12":23443932.93,"model3Benefit":88620399.5,"higherEd":6504722.57,"wftc":3890670.44,"tax":24132961.83,"model3Net":64487437.67},"19":{"area":"Longview, Aberdeen","millionaires":61,"avgMillionaireIncome":2252216,"taxStatus":"OBSERVABLE","model2Benefit":58122162.18,"model1Benefit":52787755.1,"model1Net":42648632.92,"health":21724392.3,"model2Net":47983039.99,"fairStart":3519484.42,"k12":19596339.55,"model3Benefit":98807675.7,"higherEd":5927038.5,"wftc":7354907.4,"tax":10139122.18,"model3Net":88668553.51},"20":{"area":"Centralia, Woodland","millionaires":206,"avgMillionaireIncome":2724764,"taxStatus":"OBSERVABLE","model2Benefit":55258800.8,"model1Benefit":52787755.1,"model1Net":5626194.01,"health":16518696.47,"model2Net":8097239.7,"fairStart":4621292.36,"k12":23144509.32,"model3Benefit":93939961.35,"higherEd":5668236.04,"wftc":5306066.6,"tax":47161561.1,"model3Net":46778400.26},"21":{"area":"Edmonds, Mukilteo","millionaires":259,"avgMillionaireIncome":2014876,"taxStatus":"OBSERVABLE","model2Benefit":47159161.88,"model1Benefit":52787755.1,"model1Net":17897510.07,"health":12351375.89,"model2Net":12268916.85,"fairStart":3796554.81,"k12":19021820.5,"model3Benefit":80170575.2,"higherEd":7598856.19,"wftc":4390554.5,"tax":34890245.03,"model3Net":45280330.17},"22":{"area":"Olympia, Lacey","millionaires":167,"avgMillionaireIncome":2021887,"taxStatus":"OBSERVABLE","model2Benefit":49221837.55,"model1Benefit":52787755.1,"model1Net":30135543.05,"health":13447412.18,"model2Net":26569625.5,"fairStart":3537178.95,"k12":18201212.67,"model3Benefit":83677123.84,"higherEd":8299009.27,"wftc":5737024.49,"tax":22652212.05,"model3Net":61024911.79},"23":{"area":"Bainbridge Island, Poulsbo","millionaires":346,"avgMillionaireIncome":2398803,"taxStatus":"OBSERVABLE","model2Benefit":43291431.09,"model1Benefit":52787755.1,"model1Net":-11454965.86,"health":11202920.48,"model2Net":-20951289.87,"fairStart":3669672.11,"k12":17777341.12,"model3Benefit":73595432.86,"higherEd":6391496.49,"wftc":4250000.9,"tax":64242720.96,"model3Net":9352711.9},"24":{"area":"Port Angeles, Forks","millionaires":101,"avgMillionaireIncome":2531164,"taxStatus":"OBSERVABLE","model2Benefit":49042272.4,"model1Benefit":52787755.1,"model1Net":32260335.66,"health":18878986.79,"model2Net":28514852.96,"fairStart":2689136.41,"k12":15756231.75,"model3Benefit":83371863.08,"higherEd":4188209.47,"wftc":7529707.97,"tax":20527419.44,"model3Net":62844443.64},"25":{"area":"Puyallup, South Hill","millionaires":106,"avgMillionaireIncome":2255383,"taxStatus":"OBSERVABLE","model2Benefit":53139268.88,"model1Benefit":52787755.1,"model1Net":35124392.62,"health":14138391.58,"model2Net":35475906.39,"fairStart":4200939.47,"k12":24081143.8,"model3Benefit":90336757.1,"higherEd":6847866.9,"wftc":3870927.13,"tax":17663362.49,"model3Net":72673394.61},"26":{"area":"Gig Harbor, Bremerton","millionaires":326,"avgMillionaireIncome":1814359,"taxStatus":"OBSERVABLE","model2Benefit":43813325.41,"model1Benefit":52787755.1,"model1Net":17548657.91,"health":11776195.11,"model2Net":8574228.21,"fairStart":3340381.29,"k12":18804738.38,"model3Benefit":74482653.2,"higherEd":5658993.1,"wftc":4233017.53,"tax":35239097.2,"model3Net":39243556.0},"27":{"area":"Tacoma","millionaires":209,"avgMillionaireIncome":2308612,"taxStatus":"OBSERVABLE","model2Benefit":51902756.76,"model1Benefit":52787755.1,"model1Net":16484258.4,"health":16680242.69,"model2Net":15599260.07,"fairStart":3447843.17,"k12":17371247.85,"model3Benefit":88234686.5,"higherEd":7957020.31,"wftc":6446402.75,"tax":36303496.7,"model3Net":51931189.8},"28":{"area":"Lakewood, University Place","millionaires":121,"avgMillionaireIncome":2125425,"taxStatus":"OBSERVABLE","model2Benefit":51611376.68,"model1Benefit":52787755.1,"model1Net":34712135.14,"health":13506026.29,"model2Net":33535756.72,"fairStart":4526346.12,"k12":19382064.53,"model3Benefit":87739340.35,"higherEd":8880159.44,"wftc":5316780.29,"tax":18075619.96,"model3Net":69663720.39},"29":{"area":"Parkland, Spanaway","millionaires":50,"avgMillionaireIncome":1757122,"taxStatus":"COMPARABLE_LD_PROXY","model2Benefit":62430683.35,"model1Benefit":52787755.1,"model1Net":47762858.34,"health":23906934.13,"model2Net":57405786.59,"fairStart":4301927.74,"k12":21777453.4,"model3Benefit":106132161.69,"higherEd":6823604.17,"wftc":5620763.9,"tax":5024896.76,"model3Net":101107264.93},"30":{"area":"Federal Way, Auburn","millionaires":80,"avgMillionaireIncome":1850270,"taxStatus":"OBSERVABLE","model2Benefit":60431380.17,"model1Benefit":52787755.1,"model1Net":43758787.05,"health":21112041.59,"model2Net":51402412.12,"fairStart":4392126.67,"k12":22893742.05,"model3Benefit":102733346.28,"higherEd":7247624.27,"wftc":4785845.58,"tax":9028968.05,"model3Net":93704378.23},"31":{"area":"Bonney Lake","millionaires":177,"avgMillionaireIncome":2752776,"taxStatus":"OBSERVABLE","model2Benefit":50489388.84,"model1Benefit":52787755.1,"model1Net":11607317.49,"health":11437376.93,"model2Net":9308951.23,"fairStart":4467220.51,"k12":25051463.43,"model3Benefit":85831961.02,"higherEd":6364923.02,"wftc":3168404.94,"tax":41180437.61,"model3Net":44651523.41},"32":{"area":"Shoreline, Lynnwood","millionaires":289,"avgMillionaireIncome":2582842,"taxStatus":"OBSERVABLE","model2Benefit":49093913.51,"model1Benefit":52787755.1,"model1Net":-7931534.44,"health":14168889.98,"model2Net":-11625376.04,"fairStart":3721460.97,"k12":17475110.41,"model3Benefit":83459652.96,"higherEd":8357933.05,"wftc":5370519.1,"tax":60719289.54,"model3Net":22740363.42},"33":{"area":"Kent, Des Moines","millionaires":133,"avgMillionaireIncome":1944400,"taxStatus":"OBSERVABLE","model2Benefit":58625891.9,"model1Benefit":52787755.1,"model1Net":36115325.5,"health":20686017.05,"model2Net":41953462.29,"fairStart":4304517.19,"k12":20110973.88,"model3Benefit":99664016.23,"higherEd":7990525.98,"wftc":5533857.8,"tax":16672429.61,"model3Net":82991586.62},"34":{"area":"West Seattle, Vashon Island","millionaires":430,"avgMillionaireIncome":2260396,"taxStatus":"OBSERVABLE","model2Benefit":46743157.66,"model1Benefit":52787755.1,"model1Net":-19151633.89,"health":14191287.24,"model2Net":-25196231.33,"fairStart":3780155.01,"k12":16374728.65,"model3Benefit":79463368.02,"higherEd":7746743.31,"wftc":4650243.46,"tax":71939388.99,"model3Net":7523979.03},"35":{"area":"Shelton, Rochester","millionaires":117,"avgMillionaireIncome":2104470,"taxStatus":"OBSERVABLE","model2Benefit":51342142.82,"model1Benefit":52787755.1,"model1Net":35635111.71,"health":15588018.7,"model2Net":34189499.42,"fairStart":3533294.79,"k12":22093719.59,"model3Benefit":87281642.79,"higherEd":5865803.99,"wftc":4261305.75,"tax":17152643.4,"model3Net":70128999.39},"36":{"area":"Seattle (Ballard, Queen Anne)","millionaires":1260,"avgMillionaireIncome":1861920,"taxStatus":"OBSERVABLE","model2Benefit":29995186.45,"model1Benefit":52787755.1,"model1Net":-91366934.86,"health":5302432.95,"model2Net":-114159503.51,"fairStart":3008501.03,"k12":10466726.55,"model3Benefit":50991816.96,"higherEd":7256867.22,"wftc":3960658.7,"tax":144154689.96,"model3Net":-93162873.0},"37":{"area":"Seattle (Central District, Beacon Hill)","millionaires":498,"avgMillionaireIncome":1891798,"taxStatus":"OBSERVABLE","model2Benefit":53388789.56,"model1Benefit":52787755.1,"model1Net":-6162692.89,"health":16892301.89,"model2Net":-5561658.43,"fairStart":3533726.36,"k12":15946178.61,"model3Benefit":90760942.26,"higherEd":10761098.76,"wftc":6255483.96,"tax":58950447.99,"model3Net":31810494.27},"38":{"area":"Everett, Marysville","millionaires":87,"avgMillionaireIncome":1959569,"taxStatus":"OBSERVABLE","model2Benefit":53703373.48,"model1Benefit":52787755.1,"model1Net":41706556.6,"health":18010258.9,"model2Net":42622174.98,"fairStart":3789218.06,"k12":18997492.33,"model3Benefit":91295734.92,"higherEd":7531844.83,"wftc":5374559.37,"tax":11081198.51,"model3Net":80214536.42},"39":{"area":"Sedro-Woolley, Lake Stevens","millionaires":120,"avgMillionaireIncome":1985243,"taxStatus":"OBSERVABLE","model2Benefit":50602813.59,"model1Benefit":52787755.1,"model1Net":37094397.28,"health":13815299.14,"model2Net":34909455.77,"fairStart":4403347.59,"k12":22482034.58,"model3Benefit":86024783.1,"higherEd":5957078.07,"wftc":3945054.2,"tax":15693357.82,"model3Net":70331425.28},"40":{"area":"Anacortes, San Juan Islands","millionaires":273,"avgMillionaireIncome":2479751,"taxStatus":"OBSERVABLE","model2Benefit":56817110.85,"model1Benefit":52787755.1,"model1Net":-834189.82,"health":13953018.48,"model2Net":3195165.93,"fairStart":2671441.89,"k12":16894041.47,"model3Benefit":96589088.45,"higherEd":17210363.65,"wftc":6088245.36,"tax":53621944.92,"model3Net":42967143.52},"41":{"area":"Mercer Island, Sammamish","millionaires":2660,"avgMillionaireIncome":2224486,"taxStatus":"OBSERVABLE","model2Benefit":41450717.84,"model1Benefit":52787755.1,"model1Net":-379553554.5,"health":5594073.91,"model2Net":-390890591.75,"fairStart":3076258.12,"k12":24151321.21,"model3Benefit":70466220.33,"higherEd":6083013.2,"wftc":2546051.41,"tax":432341309.6,"model3Net":-361875089.26},"42":{"area":"Bellingham, Lynden","millionaires":168,"avgMillionaireIncome":2563118,"taxStatus":"OBSERVABLE","model2Benefit":55360591.7,"model1Benefit":52787755.1,"model1Net":17930569.49,"health":17738155.98,"model2Net":20503406.09,"fairStart":3643346.11,"k12":19254809.49,"model3Benefit":94113005.88,"higherEd":8020565.55,"wftc":6703714.57,"tax":34857185.61,"model3Net":59255820.27},"43":{"area":"Seattle (Capitol Hill, University District)","millionaires":1502,"avgMillionaireIncome":2736421,"taxStatus":"OBSERVABLE","model2Benefit":38891997.72,"model1Benefit":52787755.1,"model1Net":-293403613.16,"health":7100409.0,"model2Net":-307299370.54,"fairStart":1252858.77,"k12":4277079.12,"model3Benefit":66116396.13,"higherEd":20488143.03,"wftc":5773507.8,"tax":346191368.26,"model3Net":-280074972.13},"44":{"area":"Snohomish, Mill Creek","millionaires":319,"avgMillionaireIncome":1680023,"taxStatus":"OBSERVABLE","model2Benefit":44098173.15,"model1Benefit":52787755.1,"model1Net":23993519.23,"health":7756124.62,"model2Net":15303937.28,"fairStart":4298043.58,"k12":22538176.51,"model3Benefit":74966894.36,"higherEd":6616793.28,"wftc":2889035.17,"tax":28794235.87,"model3Net":46172658.48},"45":{"area":"Redmond, Kirkland","millionaires":2004,"avgMillionaireIncome":2002629,"taxStatus":"OBSERVABLE","model2Benefit":42103975.79,"model1Benefit":52787755.1,"model1Net":-213916074.78,"health":6465184.49,"model2Net":-224599854.09,"fairStart":3937679.45,"k12":22073134.22,"model3Benefit":71576758.85,"higherEd":6957626.87,"wftc":2670350.77,"tax":266703829.89,"model3Net":-195127071.04},"46":{"area":"Seattle (Green Lake, Lake City)","millionaires":788,"avgMillionaireIncome":1948472,"taxStatus":"OBSERVABLE","model2Benefit":47934644.96,"model1Benefit":52787755.1,"model1Net":-46419173.68,"health":8673459.34,"model2Net":-51272283.82,"fairStart":3342970.74,"k12":11059023.88,"model3Benefit":81488896.43,"higherEd":19650501.14,"wftc":5208689.87,"tax":99206928.78,"model3Net":-17718032.35},"47":{"area":"Auburn, Covington","millionaires":137,"avgMillionaireIncome":1912420,"taxStatus":"OBSERVABLE","model2Benefit":57714831.32,"model1Benefit":52787755.1,"model1Net":36195453.38,"health":18146548.63,"model2Net":41122529.6,"fairStart":4025288.93,"k12":23562766.67,"model3Benefit":98115213.25,"higherEd":8357933.05,"wftc":3622294.04,"tax":16592301.72,"model3Net":81522911.53},"48":{"area":"Bellevue, Redmond","millionaires":2371,"avgMillionaireIncome":4253085,"taxStatus":"OBSERVABLE","model2Benefit":37643508.48,"model1Benefit":52787755.1,"model1Net":-971019583.37,"health":6443263.76,"model2Net":-986163830.0,"fairStart":3358075.82,"k12":16462684.33,"model3Benefit":63993964.41,"higherEd":7680887.32,"wftc":3698597.24,"tax":1023807338.47,"model3Net":-959813374.06},"49":{"area":"Vancouver","millionaires":192,"avgMillionaireIncome":3018896,"taxStatus":"OBSERVABLE","model2Benefit":57608758.08,"model1Benefit":52787755.1,"model1Net":1335258.89,"health":20187082.28,"model2Net":6156261.87,"fairStart":3735271.33,"k12":20519874.24,"model3Benefit":97934888.74,"higherEd":6563646.34,"wftc":6602883.89,"tax":51452496.21,"model3Net":46482392.53}}};
+  let ACTIVE_YEAR='2029';
+  let ACTIVE_CASE_NAME='Model 2 · Demographic Model';
+
+  function activeRecord(d){
+    const r=FISCAL_DATA[ACTIVE_YEAR]?.[String(d)]||{};
+    if(ACTIVE_CASE_NAME==='Model 1 · Equal Share Model') return {...r, benefit:r.model1Benefit, net:r.model1Net};
+    if(ACTIVE_CASE_NAME==='Model 3 · Standard Multiplier Model') return {...r, benefit:r.model3Benefit, net:r.model3Net};
+    return {...r, benefit:r.model2Benefit, net:r.model2Net};
+  }
+
+
+  function voteBadge(name) {
+    const vote=SB6346_VOTES[name] || 'NOT RECORDED';
+    const cls=vote==='YES' ? 'yes' : vote==='NO' ? 'no' : 'excused';
+    return `<a class="vote-badge ${cls}" href="${SB6346_ROLLCALL_URL}" target="_blank" rel="noopener" title="SB 6346 final chamber vote · official Washington Legislature roll call">SB 6346: ${vote}</a>`;
+  }
+
+  function stateMembers(d) {
+    const rows = MEMBERS[String(d)] || [];
+    const senator = rows.find(r => String(r.role||'').toLowerCase().includes('senator'));
+    const rep1 = rows.find(r => String(r.role||'').toLowerCase().includes('position 1'));
+    const rep2 = rows.find(r => String(r.role||'').toLowerCase().includes('position 2'));
+    const item = r => r ? {name:r.name, label:`${r.name}${r.party ? ' ('+r.party+')' : ''}`, badge:voteBadge(r.name)} : {name:'',label:'Not available',badge:''};
+    return { senator:item(senator), rep1:item(rep1), rep2:item(rep2) };
+  }
+
+  function money(v) {
+    if (v == null || !Number.isFinite(Number(v))) return 'Not available';
+    const n = Number(v);
+    const sign = n < 0 ? '−' : '';
+    return sign + '$' + Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+  }
+  function integer(v) {
+    return v == null ? 'Not available' : Number(v).toLocaleString('en-US',{maximumFractionDigits:0});
+  }
+  function netTextColor(v) {
+    if (v == null || !Number.isFinite(Number(v))) return '#222';
+    return Number(v) >= 0 ? '#1f6b3a' : '#8f1d1d';
+  }
+
+  function netLabel(v) {
+    if (v == null) return 'Not available';
+    if (v > 0) return 'Estimated net inflow';
+    if (v < 0) return 'Estimated net outflow';
+    return 'Estimated balance';
+  }
+  function fiscalColor(v) {
+    if (v == null || !Number.isFinite(Number(v))) return '#d9d9d4';
+    const x = Number(v);
+    const all=[]; Object.values(FISCAL_DATA).forEach(y=>Object.values(y).forEach(d=>{['model1Net','model2Net','model3Net'].forEach(k=>{if(Number.isFinite(Number(d[k])))all.push(Math.abs(Number(d[k])));});})); const maxAbs=Math.max(...all,1);
+    const t = Math.min(1, Math.abs(x) / maxAbs);
+    const neutral=[243,238,230];
+    const target=x < 0 ? [143,29,29] : [31,107,58];
+    const k=0.18 + 0.82*Math.sqrt(t);
+    const rgb=neutral.map((c,i)=>Math.round(c+(target[i]-c)*k));
+    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  }
+
+
+  const MEMBERS = {"1": [{"role": "Senator", "name": "Derek Stanford", "party": "D"}, {"role": "Representative · Position 1", "name": "Davina Duerr", "party": "D"}, {"role": "Representative · Position 2", "name": "Shelley Kloba", "party": "D"}], "2": [{"role": "Senator", "name": "Jim McCune", "party": "R"}, {"role": "Representative · Position 1", "name": "Andrew Barkis", "party": "R"}, {"role": "Representative · Position 2", "name": "Matt Marshall", "party": "R"}], "3": [{"role": "Senator", "name": "Marcus Riccelli", "party": "D"}, {"role": "Representative · Position 1", "name": "Natasha Hill", "party": "D"}, {"role": "Representative · Position 2", "name": "Timm Ormsby", "party": "D"}], "4": [{"role": "Senator", "name": "Leonard Christian", "party": "R"}, {"role": "Representative · Position 1", "name": "Suzanne Schmidt", "party": "R"}, {"role": "Representative · Position 2", "name": "Rob Chase", "party": "R"}], "5": [{"role": "Senator", "name": "Victoria Hunt", "party": "D"}, {"role": "Representative · Position 1", "name": "Zach Hall", "party": "D"}, {"role": "Representative · Position 2", "name": "Lisa Callan", "party": "D"}], "6": [{"role": "Senator", "name": "Jeff Holy", "party": "R"}, {"role": "Representative · Position 1", "name": "Mike Volz", "party": "R"}, {"role": "Representative · Position 2", "name": "Jenny Graham", "party": "R"}], "7": [{"role": "Senator", "name": "Shelly Short", "party": "R"}, {"role": "Representative · Position 1", "name": "Andrew Engell", "party": "R"}, {"role": "Representative · Position 2", "name": "Hunter Abell", "party": "R"}], "8": [{"role": "Senator", "name": "Matt Boehnke", "party": "R"}, {"role": "Representative · Position 1", "name": "Stephanie Barnard", "party": "R"}, {"role": "Representative · Position 2", "name": "April Connors", "party": "R"}], "9": [{"role": "Senator", "name": "Mark Schoesler", "party": "R"}, {"role": "Representative · Position 1", "name": "Mary Dye", "party": "R"}, {"role": "Representative · Position 2", "name": "Joe Schmick", "party": "R"}], "10": [{"role": "Senator", "name": "Ron Muzzall", "party": "R"}, {"role": "Representative · Position 1", "name": "Clyde Shavers", "party": "D"}, {"role": "Representative · Position 2", "name": "Dave Paul", "party": "D"}], "11": [{"role": "Senator", "name": "Bob Hasegawa", "party": "D"}, {"role": "Representative · Position 1", "name": "David Hackney", "party": "D"}, {"role": "Representative · Position 2", "name": "Steve Bergquist", "party": "D"}], "12": [{"role": "Senator", "name": "Keith Goehner", "party": "R"}, {"role": "Representative · Position 1", "name": "Brian Burnett", "party": "R"}, {"role": "Representative · Position 2", "name": "Mike Steele", "party": "R"}], "13": [{"role": "Senator", "name": "Judy Warnick", "party": "R"}, {"role": "Representative · Position 1", "name": "Tom Dent", "party": "R"}, {"role": "Representative · Position 2", "name": "Alex Ybarra", "party": "R"}], "14": [{"role": "Senator", "name": "Curtis King", "party": "R"}, {"role": "Representative · Position 1", "name": "Gloria Mendoza", "party": "R"}, {"role": "Representative · Position 2", "name": "Deb Manjarrez", "party": "R"}], "15": [{"role": "Senator", "name": "Nikki Torres", "party": "R"}, {"role": "Representative · Position 1", "name": "Chris Corry", "party": "R"}, {"role": "Representative · Position 2", "name": "Jeremie Dufault", "party": "R"}], "16": [{"role": "Senator", "name": "Perry Dozier", "party": "R"}, {"role": "Representative · Position 1", "name": "Mark Klicker", "party": "R"}, {"role": "Representative · Position 2", "name": "Skyler Rude", "party": "R"}], "17": [{"role": "Senator", "name": "Paul Harris", "party": "R"}, {"role": "Representative · Position 1", "name": "Kevin Waters", "party": "R"}, {"role": "Representative · Position 2", "name": "David Stuebe", "party": "R"}], "18": [{"role": "Senator", "name": "Adrian Cortes", "party": "D"}, {"role": "Representative · Position 1", "name": "Stephanie McClintock", "party": "R"}, {"role": "Representative · Position 2", "name": "John Ley", "party": "R"}], "19": [{"role": "Senator", "name": "Jeff Wilson", "party": "R"}, {"role": "Representative · Position 1", "name": "Jim Walsh", "party": "R"}, {"role": "Representative · Position 2", "name": "Joel McEntire", "party": "R"}], "20": [{"role": "Senator", "name": "John Braun", "party": "R"}, {"role": "Representative · Position 1", "name": "Peter Abbarno", "party": "R"}, {"role": "Representative · Position 2", "name": "Ed Orcutt", "party": "R"}], "21": [{"role": "Senator", "name": "Marko Liias", "party": "D"}, {"role": "Representative · Position 1", "name": "Strom Peterson", "party": "D"}, {"role": "Representative · Position 2", "name": "Lillian Ortiz-Self", "party": "D"}], "22": [{"role": "Senator", "name": "Jessica Bateman", "party": "D"}, {"role": "Representative · Position 1", "name": "Beth Doglio", "party": "D"}, {"role": "Representative · Position 2", "name": "Lisa Parshley", "party": "D"}], "23": [{"role": "Senator", "name": "Drew Hansen", "party": "D"}, {"role": "Representative · Position 1", "name": "Tarra Simmons", "party": "D"}, {"role": "Representative · Position 2", "name": "Greg Nance", "party": "D"}], "24": [{"role": "Senator", "name": "Mike Chapman", "party": "D"}, {"role": "Representative · Position 1", "name": "Adam Bernbaum", "party": "D"}, {"role": "Representative · Position 2", "name": "Steve Tharinger", "party": "D"}], "25": [{"role": "Senator", "name": "Chris Gildon", "party": "R"}, {"role": "Representative · Position 1", "name": "Michael Keaton", "party": "R"}, {"role": "Representative · Position 2", "name": "Cyndy Jacobsen", "party": "R"}], "26": [{"role": "Senator", "name": "Deborah Krishnadasan", "party": "D"}, {"role": "Representative · Position 1", "name": "Adison Richards", "party": "D"}, {"role": "Representative · Position 2", "name": "Michelle Valdez", "party": "R"}], "27": [{"role": "Senator", "name": "Yasmin Trudeau", "party": "D"}, {"role": "Representative · Position 1", "name": "Laurie Jinkins", "party": "D"}, {"role": "Representative · Position 2", "name": "Jake Fey", "party": "D"}], "28": [{"role": "Senator", "name": "T'wina Nobles", "party": "D"}, {"role": "Representative · Position 1", "name": "Mari Leavitt", "party": "D"}, {"role": "Representative · Position 2", "name": "Dan Bronoske", "party": "D"}], "29": [{"role": "Senator", "name": "Steve Conway", "party": "D"}, {"role": "Representative · Position 1", "name": "Melanie Morgan", "party": "D"}, {"role": "Representative · Position 2", "name": "Sharlett Mena", "party": "D"}], "30": [{"role": "Senator", "name": "Claire Wilson", "party": "D"}, {"role": "Representative · Position 1", "name": "Jamila Taylor", "party": "D"}, {"role": "Representative · Position 2", "name": "Kristine Reeves", "party": "D"}], "31": [{"role": "Senator", "name": "Phil Fortunato", "party": "R"}, {"role": "Representative · Position 1", "name": "Drew Stokesbary", "party": "R"}, {"role": "Representative · Position 2", "name": "Joshua Penner", "party": "R"}], "32": [{"role": "Senator", "name": "Jesse Salomon", "party": "D"}, {"role": "Representative · Position 1", "name": "Cindy Ryu", "party": "D"}, {"role": "Representative · Position 2", "name": "Lauren Davis", "party": "D"}], "33": [{"role": "Senator", "name": "Tina Orwall", "party": "D"}, {"role": "Representative · Position 1", "name": "Edwin Obras", "party": "D"}, {"role": "Representative · Position 2", "name": "Mia Gregerson", "party": "D"}], "34": [{"role": "Senator", "name": "Emily Alvarado", "party": "D"}, {"role": "Representative · Position 1", "name": "Brianna Thomas", "party": "D"}, {"role": "Representative · Position 2", "name": "Joe Fitzgibbon", "party": "D"}], "35": [{"role": "Senator", "name": "Drew MacEwen", "party": "R"}, {"role": "Representative · Position 1", "name": "Dan Griffey", "party": "R"}, {"role": "Representative · Position 2", "name": "Travis Couture", "party": "R"}], "36": [{"role": "Senator", "name": "Noel Frame", "party": "D"}, {"role": "Representative · Position 1", "name": "Julia Reed", "party": "D"}, {"role": "Representative · Position 2", "name": "Liz Berry", "party": "D"}], "37": [{"role": "Senator", "name": "Rebecca Saldaña", "party": "D"}, {"role": "Representative · Position 1", "name": "Sharon Tomiko Santos", "party": "D"}, {"role": "Representative · Position 2", "name": "Chipalo Street", "party": "D"}], "38": [{"role": "Senator", "name": "June Robinson", "party": "D"}, {"role": "Representative · Position 1", "name": "Julio Cortes", "party": "D"}, {"role": "Representative · Position 2", "name": "Mary Fosse", "party": "D"}], "39": [{"role": "Senator", "name": "Keith Wagoner", "party": "R"}, {"role": "Representative · Position 1", "name": "Sam Low", "party": "R"}, {"role": "Representative · Position 2", "name": "Carolyn Eslick", "party": "R"}], "40": [{"role": "Senator", "name": "Liz Lovelett", "party": "D"}, {"role": "Representative · Position 1", "name": "Debra Lekanoff", "party": "D"}, {"role": "Representative · Position 2", "name": "Alex Ramel", "party": "D"}], "41": [{"role": "Senator", "name": "Lisa Wellman", "party": "D"}, {"role": "Representative · Position 1", "name": "Janice Zahn", "party": "D"}, {"role": "Representative · Position 2", "name": "My-Linh Thai", "party": "D"}], "42": [{"role": "Senator", "name": "Sharon Shewmake", "party": "D"}, {"role": "Representative · Position 1", "name": "Alicia Rule", "party": "D"}, {"role": "Representative · Position 2", "name": "Joe Timmons", "party": "D"}], "43": [{"role": "Senator", "name": "Jamie Pedersen", "party": "D"}, {"role": "Representative · Position 1", "name": "Nicole Macri", "party": "D"}, {"role": "Representative · Position 2", "name": "Shaun Scott", "party": "D"}], "44": [{"role": "Senator", "name": "John Lovick", "party": "D"}, {"role": "Representative · Position 1", "name": "Brandy Donaghy", "party": "D"}, {"role": "Representative · Position 2", "name": "April Berg", "party": "D"}], "45": [{"role": "Senator", "name": "Manka Dhingra", "party": "D"}, {"role": "Representative · Position 1", "name": "Roger Goodman", "party": "D"}, {"role": "Representative · Position 2", "name": "Larry Springer", "party": "D"}], "46": [{"role": "Senator", "name": "Javier Valdez", "party": "D"}, {"role": "Representative · Position 1", "name": "Gerry Pollet", "party": "D"}, {"role": "Representative · Position 2", "name": "Darya Farivar", "party": "D"}], "47": [{"role": "Senator", "name": "Claudia Kauffman", "party": "D"}, {"role": "Representative · Position 1", "name": "Debra Entenman", "party": "D"}, {"role": "Representative · Position 2", "name": "Chris Stearns", "party": "D"}], "48": [{"role": "Senator", "name": "Vandana Slatter", "party": "D"}, {"role": "Representative · Position 1", "name": "Osman Salahuddin", "party": "D"}, {"role": "Representative · Position 2", "name": "Amy Walen", "party": "D"}], "49": [{"role": "Senator", "name": "Annette Cleveland", "party": "D"}, {"role": "Representative · Position 1", "name": "Sharon Wylie", "party": "D"}, {"role": "Representative · Position 2", "name": "Monica Jurado Stonier", "party": "D"}]};
+
+  const SB6346_VOTES = {"Derek Stanford":"YES","Davina Duerr":"YES","Shelley Kloba":"YES","Jim McCune":"EXCUSED","Andrew Barkis":"NO","Matt Marshall":"NO","Marcus Riccelli":"YES","Natasha Hill":"YES","Timm Ormsby":"YES","Leonard Christian":"NO","Suzanne Schmidt":"NO","Rob Chase":"NO","Victoria Hunt":"YES","Zach Hall":"YES","Lisa Callan":"YES","Jeff Holy":"NO","Mike Volz":"NO","Jenny Graham":"NO","Shelly Short":"NO","Andrew Engell":"NO","Hunter Abell":"NO","Matt Boehnke":"NO","Stephanie Barnard":"NO","April Connors":"NO","Mark Schoesler":"NO","Mary Dye":"NO","Joe Schmick":"NO","Ron Muzzall":"NO","Clyde Shavers":"NO","Dave Paul":"YES","Bob Hasegawa":"YES","David Hackney":"YES","Steve Bergquist":"YES","Keith Goehner":"NO","Brian Burnett":"NO","Mike Steele":"NO","Judy Warnick":"NO","Tom Dent":"NO","Alex Ybarra":"NO","Curtis King":"NO","Gloria Mendoza":"NO","Deb Manjarrez":"NO","Nikki Torres":"NO","Chris Corry":"NO","Jeremie Dufault":"NO","Perry Dozier":"NO","Mark Klicker":"NO","Skyler Rude":"NO","Paul Harris":"NO","Kevin Waters":"NO","David Stuebe":"NO","Adrian Cortes":"NO","Stephanie McClintock":"NO","John Ley":"NO","Jeff Wilson":"NO","Jim Walsh":"NO","Joel McEntire":"EXCUSED","John Braun":"NO","Peter Abbarno":"NO","Ed Orcutt":"NO","Marko Liias":"YES","Strom Peterson":"YES","Lillian Ortiz-Self":"YES","Jessica Bateman":"YES","Beth Doglio":"YES","Lisa Parshley":"YES","Drew Hansen":"NO","Tarra Simmons":"YES","Greg Nance":"YES","Mike Chapman":"YES","Adam Bernbaum":"YES","Steve Tharinger":"YES","Chris Gildon":"NO","Michael Keaton":"NO","Cyndy Jacobsen":"NO","Deborah Krishnadasan":"NO","Adison Richards":"NO","Michelle Valdez":"NO","Yasmin Trudeau":"YES","Laurie Jinkins":"YES","Jake Fey":"YES","T'wina Nobles":"YES","Mari Leavitt":"YES","Dan Bronoske":"NO","Steve Conway":"YES","Melanie Morgan":"NO","Sharlett Mena":"YES","Claire Wilson":"YES","Jamila Taylor":"YES","Kristine Reeves":"NO","Phil Fortunato":"NO","Drew Stokesbary":"NO","Joshua Penner":"NO","Jesse Salomon":"YES","Cindy Ryu":"YES","Lauren Davis":"YES","Tina Orwall":"YES","Edwin Obras":"YES","Mia Gregerson":"YES","Emily Alvarado":"YES","Brianna Thomas":"YES","Joe Fitzgibbon":"YES","Drew MacEwen":"NO","Dan Griffey":"NO","Travis Couture":"NO","Noel Frame":"YES","Julia Reed":"YES","Liz Berry":"YES","Rebecca Saldaña":"YES","Sharon Tomiko Santos":"YES","Chipalo Street":"YES","June Robinson":"YES","Julio Cortes":"YES","Mary Fosse":"YES","Keith Wagoner":"NO","Sam Low":"NO","Carolyn Eslick":"NO","Liz Lovelett":"YES","Debra Lekanoff":"YES","Alex Ramel":"YES","Lisa Wellman":"YES","Janice Zahn":"YES","My-Linh Thai":"YES","Sharon Shewmake":"YES","Alicia Rule":"NO","Joe Timmons":"NO","Jamie Pedersen":"YES","Nicole Macri":"YES","Shaun Scott":"YES","John Lovick":"YES","Brandy Donaghy":"YES","April Berg":"YES","Manka Dhingra":"YES","Roger Goodman":"YES","Larry Springer":"YES","Javier Valdez":"YES","Gerry Pollet":"YES","Darya Farivar":"YES","Claudia Kauffman":"YES","Debra Entenman":"YES","Chris Stearns":"YES","Vandana Slatter":"YES","Osman Salahuddin":"YES","Amy Walen":"NO","Annette Cleveland":"YES","Sharon Wylie":"YES","Monica Jurado Stonier":"YES"};
+  const SB6346_ROLLCALL_URL = "https://app.leg.wa.gov/bi/RollCallsOnABill/RollCall?biennium=2025-26&billNumber=6346&initiative=False";  const CONGRESS = {
+    "1": {name:"Suzan DelBene", party:"D", url:"https://delbene.house.gov/"},
+    "2": {name:"Rick Larsen", party:"D", url:"https://larsen.house.gov/"},
+    "3": {name:"Marie Gluesenkamp Perez", party:"D", url:"https://gluesenkampperez.house.gov/"},
+    "4": {name:"Dan Newhouse", party:"R", url:"https://newhouse.house.gov/"},
+    "5": {name:"Michael Baumgartner", party:"R", url:"https://baumgartner.house.gov/"},
+    "6": {name:"Emily Randall", party:"D", url:"https://randall.house.gov/"},
+    "7": {name:"Pramila Jayapal", party:"D", url:"https://jayapal.house.gov/"},
+    "8": {name:"Kim Schrier", party:"D", url:"https://schrier.house.gov/"},
+    "9": {name:"Adam Smith", party:"D", url:"https://adamsmith.house.gov/"},
+    "10": {name:"Marilyn Strickland", party:"D", url:"https://strickland.house.gov/"}
+  };
+
+  const US_SENATORS = [
+    {name:"Patty Murray", party:"D", url:"https://www.murray.senate.gov/"},
+    {name:"Maria Cantwell", party:"D", url:"https://www.cantwell.senate.gov/"}
+  ];
+
+  const LD_URL = "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/LegislativeDistricts/FeatureServer/0/query?where=1%3D1&outFields=NDISTRICT&outSR=4326&f=geojson";
+  const CD_GEO = {"type":"FeatureCollection","name":"cd118_washington_embedded","features":[{"type":"Feature","properties":{"CD118FP":"01","GEOID20":"5301","NAMELSAD20":"Congressional District 1"},"geometry":{"type":"Polygon","coordinates":[[[-122.333395,47.785889],[-122.329873,47.802373],[-122.261873,47.81883],[-122.27459,47.864175],[-122.252837,47.859872],[-122.234087,47.881922],[-122.252909,47.882957],[-122.25184,47.896448],[-122.233578,47.902784],[-122.206856,47.878178],[-122.205656,47.906795],[-122.189462,47.905199],[-122.204573,47.921857],[-122.174159,47.921631],[-122.170811,47.940488],[-122.191514,47.948365],[-122.187076,47.975323],[-122.152131,47.99027],[-122.144783,48.021203],[-122.184125,48.049214],[-122.184324,48.122947],[-122.215677,48.155539],[-122.188306,48.167798],[-122.204182,48.189717],[-122.174225,48.166959],[-122.109081,48.208393],[-122.102388,48.173488],[-122.118575,48.180859],[-122.118849,48.169877],[-122.108507,48.144333],[-122.077324,48.136527],[-122.075721,48.108389],[-122.05401,48.108629],[-122.058631,48.086076],[-122.012894,48.083126],[-122.029606,48.047906],[-122.010479,48.036204],[-122.000204,47.963395],[-121.946705,47.949639],[-121.932208,47.872189],[-121.964542,47.861341],[-121.941642,47.861652],[-121.937763,47.856429],[-122.037902,47.822935],[-122.004932,47.808943],[-122.000365,47.775392],[-122.112945,47.775949],[-122.129151,47.738251],[-122.115229,47.737603],[-122.110546,47.714448],[-122.08857,47.715501],[-122.092739,47.692151],[-122.079175,47.682331],[-122.098154,47.648381],[-122.07973,47.621057],[-122.096531,47.602307],[-122.174985,47.619096],[-122.196477,47.594336],[-122.205368,47.609109],[-122.220234,47.610121],[-122.220434,47.596821],[-122.263651,47.613115],[-122.230575,47.680901],[-122.271923,47.720434],[-122.270663,47.776772],[-122.333395,47.785889]]]}},{"type":"Feature","properties":{"CD118FP":"02","GEOID20":"5302","NAMELSAD20":"Congressional District 2"},"geometry":{"type":"Polygon","coordinates":[[[-123.32224,49.002072],[-120.851528,49.000301],[-120.880747,48.966662],[-120.831784,48.938277],[-120.798244,48.959467],[-120.756227,48.942913],[-120.772052,48.926506],[-120.770223,48.881826],[-120.730717,48.853831],[-120.735427,48.786487],[-120.655857,48.724342],[-120.678195,48.717826],[-120.679972,48.694296],[-120.703432,48.696915],[-120.717333,48.664526],[-120.74978,48.659272],[-120.788307,48.625115],[-120.760458,48.582761],[-120.719212,48.596432],[-120.688515,48.575705],[-120.703556,48.526401],[-120.791857,48.507537],[-120.844655,48.550552],[-120.863213,48.530074],[-120.950502,48.529581],[-120.951949,48.499206],[-121.036234,48.495297],[-121.052761,48.482013],[-121.063231,48.459792],[-121.03713,48.433027],[-121.066429,48.393539],[-121.040509,48.348471],[-121.0695,48.338964],[-121.071589,48.317802],[-121.001658,48.296009],[-122.303986,48.297575],[-122.221975,48.223327],[-122.188303,48.170337],[-122.215403,48.151841],[-122.184324,48.122947],[-122.184125,48.049214],[-122.14498,48.021781],[-122.150703,47.992847],[-122.187076,47.975323],[-122.191514,47.948365],[-122.171354,47.936911],[-122.174159,47.921631],[-122.204573,47.921857],[-122.204674,47.921689],[-122.207036,47.910021],[-122.189481,47.907021],[-122.205656,47.906795],[-122.201465,47.88086],[-122.242299,47.903712],[-122.258412,47.889419],[-122.234087,47.881922],[-122.246067,47.865486],[-122.27459,47.864175],[-122.261873,47.81883],[-122.329873,47.802373],[-122.327229,47.777657],[-122.438093,47.777814],[-122.432678,47.842037],[-122.494874,47.923349],[-122.582875,47.955135],[-122.626267,47.993204],[-122.652442,48.120683],[-122.703304,48.134416],[-122.852093,48.226462],[-122.863078,48.370361],[-123.247919,48.284558],[-123.115138,48.42283],[-123.159874,48.453507],[-123.218929,48.548708],[-123.267877,48.693993],[-123.008486,48.767099],[-123.008485,48.831219],[-123.32224,49.002072]]]}},{"type":"Feature","properties":{"CD118FP":"03","GEOID20":"5303","NAMELSAD20":"Congressional District 3"},"geometry":{"type":"Polygon","coordinates":[[[-124.175131,46.793732],[-123.160588,46.793383],[-123.15158,46.840704],[-123.117716,46.830803],[-123.092128,46.85296],[-123.039415,46.858402],[-123.048603,46.829106],[-122.989051,46.822436],[-122.989442,46.80963],[-122.852588,46.863896],[-122.793371,46.85889],[-122.71073,46.876522],[-122.69111,46.916001],[-122.622209,46.938073],[-122.528496,46.9253],[-122.494116,46.905218],[-122.490888,46.867452],[-122.45174,46.852648],[-122.327681,46.844343],[-122.324914,46.830344],[-122.303576,46.828117],[-122.309003,46.789587],[-122.264619,46.765224],[-122.240622,46.775928],[-122.177877,46.755202],[-122.040797,46.742357],[-121.954242,46.755017],[-121.84189,46.728455],[-121.758593,46.783791],[-121.455218,46.783797],[-121.442036,46.758291],[-121.424281,46.756629],[-121.429351,46.739351],[-121.353179,46.712266],[-121.413217,46.675868],[-121.416275,46.6514],[-121.395246,46.646125],[-121.386708,46.621204],[-121.42457,46.570285],[-121.416646,46.54824],[-121.451256,46.533894],[-121.455981,46.516728],[-121.423202,46.492686],[-121.435856,46.475907],[-121.386647,46.409942],[-121.397016,46.388083],[-121.522324,46.388224],[-121.522321,46.044006],[-121.612232,46.044093],[-121.609246,45.782519],[-121.51438,45.782114],[-121.53835,45.770126],[-121.523681,45.72493],[-121.707295,45.694836],[-121.811184,45.706715],[-121.867021,45.693391],[-121.908134,45.654558],[-121.983007,45.622888],[-122.266701,45.543841],[-122.331502,45.548241],[-122.380302,45.575941],[-122.438674,45.563585],[-122.682795,45.621133],[-122.76381,45.657138],[-122.774511,45.680437],[-122.760955,45.750376],[-122.795605,45.81],[-122.785026,45.867699],[-122.8115,45.912724],[-122.813999,45.960983],[-122.878091,46.03128],[-122.884478,46.06028],[-122.904119,46.083734],[-123.115904,46.185268],[-123.166416,46.188979],[-123.280166,46.144843],[-123.371433,46.146372],[-123.430987,46.181571],[-123.427629,46.229348],[-123.447592,46.249832],[-123.501246,46.271014],[-123.688115,46.250105],[-123.741449,46.269155],[-123.87263,46.234987],[-123.930477,46.238805],[-124.024877,46.299099],[-124.035951,46.264183],[-124.159546,46.261132],[-124.129982,46.431594],[-124.14526,46.670474],[-124.175131,46.793732]]]}},{"type":"Feature","properties":{"CD118FP":"04","GEOID20":"5304","NAMELSAD20":"Congressional District 4"},"geometry":{"type":"Polygon","coordinates":[[[-121.609246,45.782519],[-121.612232,46.044093],[-121.522321,46.044006],[-121.522324,46.388224],[-121.397016,46.388083],[-121.386647,46.409942],[-121.435856,46.475907],[-121.423202,46.492686],[-121.455981,46.516728],[-121.451256,46.533894],[-121.416646,46.54824],[-121.42457,46.570285],[-121.386708,46.621204],[-121.395246,46.646125],[-121.416275,46.6514],[-121.413217,46.675868],[-121.353179,46.712266],[-121.430333,46.740162],[-121.424281,46.756629],[-121.455027,46.780602],[-121.442526,46.792988],[-121.497345,46.862866],[-121.52307,46.872783],[-121.496986,46.908342],[-121.456447,46.923577],[-121.457728,46.964036],[-121.406694,46.998092],[-121.399801,47.033464],[-121.37425,47.056436],[-121.379682,47.087495],[-121.359236,47.07074],[-121.280716,47.088731],[-121.218842,47.06564],[-121.090054,46.991007],[-121.089957,46.969295],[-121.02662,46.911308],[-120.634562,46.91213],[-120.633981,46.825776],[-120.508605,46.824862],[-120.51,46.737946],[-119.973036,46.737126],[-119.927436,46.798445],[-119.964585,46.857202],[-119.965804,46.943283],[-120.001122,46.993641],[-120.008565,47.036253],[-120.042766,47.071553],[-120.001465,47.127553],[-120.003938,47.216036],[-120.0909,47.240104],[-120.086308,47.338942],[-120.129573,47.366251],[-120.28653,47.393111],[-120.311383,47.442048],[-120.312368,47.458927],[-120.297528,47.46339],[-120.316594,47.471273],[-120.292814,47.538172],[-120.239601,47.584193],[-120.236935,47.631779],[-120.199048,47.682276],[-120.222858,47.723314],[-120.209395,47.748356],[-120.130914,47.776601],[-120.087308,47.763208],[-119.994952,47.781353],[-119.960127,47.845806],[-119.919294,47.862323],[-119.915059,47.901372],[-119.861496,47.947033],[-119.870595,47.960455],[-120.066552,47.966402],[-120.090176,48.018006],[-120.146391,48.037343],[-120.149009,48.052234],[-120.131669,48.054588],[-120.143422,48.065225],[-120.21306,48.079044],[-120.29104,48.129578],[-120.31961,48.124424],[-120.348578,48.144284],[-120.362263,48.164752],[-120.346284,48.199986],[-120.355542,48.218422],[-120.469124,48.26898],[-120.510287,48.311298],[-120.586816,48.320322],[-120.563192,48.370848],[-120.649933,48.398139],[-120.641653,48.411121],[-120.668818,48.449735],[-120.632405,48.468774],[-120.653542,48.480781],[-120.628411,48.496896],[-120.6572,48.50731],[-120.651311,48.536215],[-120.702069,48.531589],[-120.688515,48.575705],[-120.719212,48.596432],[-120.758763,48.581948],[-120.785312,48.605164],[-120.771692,48.642627],[-120.717333,48.664526],[-120.703432,48.696915],[-120.679972,48.694296],[-120.678195,48.717826],[-120.65598,48.724897],[-120.735427,48.786487],[-120.730717,48.853831],[-120.770223,48.881826],[-120.772052,48.926506],[-120.75742,48.944322],[-120.798244,48.959467],[-120.832931,48.938522],[-120.88564,48.975212],[-120.851528,49.000301],[-118.836614,49.000083],[-118.837006,48.653869],[-118.869633,48.653826],[-118.869983,48.626197],[-118.86952,48.481626],[-118.843888,48.481739],[-118.845785,47.963478],[-118.973504,47.943414],[-118.982652,46.911344],[-119.13607,46.91222],[-119.14395,46.89969],[-119.127894,46.832708],[-119.13326,46.76153],[-119.080797,46.737761],[-119.369429,46.737695],[-119.369165,46.678179],[-119.457535,46.673926],[-119.413046,46.652631],[-119.404667,46.61494],[-119.367361,46.582656],[-119.269654,46.520357],[-119.258433,46.489465],[-119.269368,46.370295],[-119.227079,46.387541],[-119.11452,46.372563],[-119.116457,46.285434],[-118.988337,46.300118],[-118.988231,46.329288],[-118.951912,46.31423],[-118.951435,46.282736],[-118.859406,46.284092],[-118.845176,46.305453],[-118.779424,46.293122],[-118.825277,46.284328],[-118.863464,46.251389],[-118.976491,46.237553],[-119.039918,46.196256],[-118.968049,46.130834],[-118.942305,46.07442],[-118.941656,46.02698],[-119.027215,45.969112],[-119.126322,45.932784],[-119.257072,45.939867],[-119.488083,45.906361],[-119.571602,45.925478],[-119.623628,45.905602],[-119.669974,45.856908],[-119.965772,45.824376],[-120.170603,45.76198],[-120.210774,45.725915],[-120.482615,45.694407],[-120.559287,45.738315],[-120.635051,45.745711],[-120.689535,45.715727],[-120.855415,45.671729],[-120.895822,45.642923],[-120.944018,45.656392],[-121.06446,45.652491],[-121.131833,45.609753],[-121.167852,45.606098],[-121.196459,45.61661],[-121.215768,45.671228],[-121.337712,45.704839],[-121.423962,45.694074],[-121.523681,45.72493],[-121.53835,45.770126],[-121.51438,45.782114],[-121.609246,45.782519]]]}},{"type":"Feature","properties":{"CD118FP":"05","GEOID20":"5305","NAMELSAD20":"Congressional District 5"},"geometry":{"type":"Polygon","coordinates":[[[-119.457479,46.674749],[-119.369165,46.678179],[-119.369429,46.737695],[-119.080797,46.737761],[-119.13326,46.76153],[-119.127894,46.832708],[-119.14395,46.89969],[-119.13607,46.91222],[-118.982652,46.911344],[-118.973504,47.943414],[-118.845785,47.963478],[-118.843888,48.481739],[-118.86952,48.481626],[-118.869983,48.626197],[-118.869633,48.653826],[-118.837006,48.653869],[-118.836614,49.000083],[-117.032345,48.999201],[-117.034626,46.417845],[-117.062788,46.353605],[-116.986216,46.29595],[-116.991195,46.27696],[-116.95548,46.230984],[-116.965384,46.203122],[-116.922341,46.168774],[-116.955424,46.101861],[-116.982589,46.090075],[-116.942793,46.061115],[-116.916071,45.995357],[-118.987258,45.999855],[-118.941323,46.027528],[-118.942305,46.07442],[-118.974664,46.139523],[-119.041498,46.192667],[-119.031916,46.207459],[-118.974779,46.238177],[-118.863464,46.251389],[-118.824074,46.284879],[-118.777344,46.29015],[-118.84496,46.305464],[-118.859406,46.284092],[-118.951435,46.282736],[-118.951912,46.31423],[-118.988231,46.329288],[-118.988337,46.300118],[-119.116457,46.285434],[-119.11452,46.372563],[-119.227079,46.387541],[-119.269368,46.370295],[-119.258433,46.489465],[-119.269654,46.520357],[-119.367361,46.582656],[-119.404667,46.61494],[-119.413046,46.652631],[-119.457479,46.674749]]]}},{"type":"Feature","properties":{"CD118FP":"06","GEOID20":"5306","NAMELSAD20":"Congressional District 6"},"geometry":{"type":"Polygon","coordinates":[[[-124.848974,48.181373],[-124.827681,48.21383],[-124.780504,48.22858],[-124.788742,48.266372],[-124.761387,48.295688],[-124.817912,48.391003],[-124.801175,48.423242],[-124.745838,48.445663],[-124.772262,48.473812],[-124.763031,48.499784],[-124.012056,48.296671],[-123.541216,48.224553],[-122.863078,48.370361],[-122.852093,48.226462],[-122.703304,48.134416],[-122.656508,48.124817],[-122.626267,47.993204],[-122.582875,47.955135],[-122.501809,47.929713],[-122.432678,47.842037],[-122.442923,47.789833],[-122.427149,47.745364],[-122.4597,47.675788],[-122.444854,47.543333],[-122.480016,47.52174],[-122.518886,47.462439],[-122.53893,47.339919],[-122.494083,47.317308],[-122.437252,47.333717],[-122.334914,47.257366],[-122.294571,47.257211],[-122.293902,47.242744],[-122.326458,47.238327],[-122.320399,47.207017],[-122.419162,47.237924],[-122.452271,47.223144],[-122.452576,47.184616],[-122.504982,47.184697],[-122.521509,47.198888],[-122.505233,47.194336],[-122.50495,47.242912],[-122.558378,47.235349],[-122.565437,47.24682],[-122.600538,47.209719],[-122.622139,47.209219],[-122.675341,47.251319],[-122.732542,47.205818],[-122.711036,47.195957],[-122.759505,47.141315],[-122.820576,47.19422],[-122.895538,47.157145],[-122.938156,47.190316],[-123.006831,47.147992],[-123.021359,47.118094],[-123.073654,47.106242],[-123.075026,47.084787],[-123.201891,47.085059],[-123.203101,46.996973],[-123.158364,46.995871],[-123.160588,46.793383],[-124.181203,46.793736],[-124.206831,46.870723],[-124.246642,46.917813],[-124.24413,47.058648],[-124.306367,47.248083],[-124.351299,47.27639],[-124.359644,47.309336],[-124.391354,47.329766],[-124.419392,47.383976],[-124.406542,47.428021],[-124.461402,47.62496],[-124.514922,47.623708],[-124.554626,47.644427],[-124.566552,47.680239],[-124.540302,47.716445],[-124.641839,47.819424],[-124.70418,47.854737],[-124.753795,47.910523],[-124.758185,47.943978],[-124.795204,47.966506],[-124.801155,48.037809],[-124.785187,48.087115],[-124.848974,48.181373]]]}},{"type":"Feature","properties":{"CD118FP":"07","GEOID20":"5307","NAMELSAD20":"Congressional District 7"},"geometry":{"type":"Polygon","coordinates":[[[-122.541661,47.349193],[-122.518886,47.462439],[-122.480016,47.52174],[-122.444854,47.543333],[-122.4597,47.675788],[-122.427149,47.745364],[-122.438093,47.777814],[-122.271033,47.777095],[-122.271923,47.720434],[-122.229725,47.667777],[-122.258182,47.644971],[-122.265147,47.601321],[-122.29677,47.601654],[-122.296201,47.612939],[-122.330299,47.603231],[-122.321372,47.558173],[-122.291372,47.524462],[-122.318455,47.531767],[-122.292255,47.48878],[-122.31158,47.488569],[-122.323426,47.466015],[-122.321667,47.44027],[-122.335804,47.431269],[-122.32685,47.407672],[-122.365035,47.408721],[-122.351034,47.378121],[-122.467701,47.31943],[-122.520417,47.322775],[-122.541661,47.349193]]]}},{"type":"Feature","properties":{"CD118FP":"08","GEOID20":"5308","NAMELSAD20":"Congressional District 8"},"geometry":{"type":"Polygon","coordinates":[[[-122.566228,46.940425],[-122.547933,46.988852],[-122.533707,46.990521],[-122.538924,47.004271],[-122.435101,47.084195],[-122.432589,47.067963],[-122.398239,47.053337],[-122.400363,47.067989],[-122.326285,47.071495],[-122.293799,47.081873],[-122.293561,47.096461],[-122.23145,47.086067],[-122.244319,47.110705],[-122.241619,47.18635],[-122.194939,47.191944],[-122.192489,47.209363],[-122.218831,47.217173],[-122.218698,47.241733],[-122.186893,47.253388],[-122.229494,47.257538],[-122.228889,47.275601],[-122.213406,47.276838],[-122.21338,47.303874],[-122.178608,47.329787],[-122.18679,47.386925],[-122.1586,47.41407],[-122.175797,47.430282],[-122.124484,47.437387],[-122.164152,47.477711],[-122.121624,47.473725],[-122.148635,47.501965],[-122.142997,47.52722],[-122.100524,47.544933],[-122.096531,47.602307],[-122.079311,47.623034],[-122.098154,47.648381],[-122.07898,47.664468],[-122.08857,47.715501],[-122.110546,47.714448],[-122.125941,47.747343],[-122.112945,47.775949],[-122.000365,47.775392],[-122.004932,47.808943],[-122.037902,47.822935],[-121.998031,47.827308],[-121.932208,47.872189],[-121.948768,47.953095],[-122.000204,47.963395],[-122.012889,47.996283],[-122.010479,48.036204],[-122.029606,48.047906],[-122.012894,48.083126],[-122.059171,48.086431],[-122.05401,48.108629],[-122.075721,48.108389],[-122.077324,48.136527],[-122.114113,48.154824],[-122.107384,48.207107],[-122.180169,48.166992],[-122.303986,48.297575],[-121.001658,48.296009],[-121.071589,48.317802],[-121.0695,48.338964],[-121.040509,48.348471],[-121.066429,48.393539],[-121.041588,48.411271],[-121.04037,48.444401],[-121.063302,48.460033],[-121.036234,48.495297],[-120.951949,48.499206],[-120.950502,48.529581],[-120.863213,48.530074],[-120.844655,48.550552],[-120.787932,48.5071],[-120.652283,48.536939],[-120.6572,48.50731],[-120.628411,48.496896],[-120.653542,48.480781],[-120.632405,48.468774],[-120.668818,48.449735],[-120.641653,48.411121],[-120.649933,48.398139],[-120.563192,48.370848],[-120.586816,48.320322],[-120.510287,48.311298],[-120.469124,48.26898],[-120.355542,48.218422],[-120.346284,48.199986],[-120.362263,48.164752],[-120.348578,48.144284],[-120.31961,48.124424],[-120.29104,48.129578],[-120.21306,48.079044],[-120.143422,48.065225],[-120.131669,48.054588],[-120.149009,48.052234],[-120.146391,48.037343],[-120.090176,48.018006],[-120.066552,47.966402],[-119.870595,47.960455],[-119.859943,47.943151],[-119.912567,47.904493],[-119.915008,47.867687],[-119.960127,47.845806],[-119.994952,47.781353],[-120.087308,47.763208],[-120.130914,47.776601],[-120.209395,47.748356],[-120.222858,47.723314],[-120.199048,47.682276],[-120.236935,47.631779],[-120.239601,47.584193],[-120.292814,47.538172],[-120.316594,47.471273],[-120.297528,47.46339],[-120.312368,47.458927],[-120.311383,47.442048],[-120.28653,47.393111],[-120.129573,47.366251],[-120.086308,47.338942],[-120.0909,47.240104],[-120.003938,47.216036],[-120.001465,47.127553],[-120.042266,47.068853],[-120.008565,47.036253],[-120.001122,46.993641],[-119.965804,46.943283],[-119.964585,46.857202],[-119.925605,46.811431],[-119.973036,46.737126],[-120.51,46.737946],[-120.508605,46.824862],[-120.633981,46.825776],[-120.634562,46.91213],[-121.02662,46.911308],[-121.089957,46.969295],[-121.090054,46.991007],[-121.280716,47.088731],[-121.359236,47.07074],[-121.381798,47.086145],[-121.37425,47.056436],[-121.399801,47.033464],[-121.409122,46.995189],[-121.457728,46.964036],[-121.456447,46.923577],[-121.514245,46.890987],[-121.52307,46.872783],[-121.497345,46.862866],[-121.442526,46.792988],[-121.455218,46.783797],[-121.758593,46.783791],[-121.84189,46.728455],[-121.954242,46.755017],[-122.040797,46.742357],[-122.177877,46.755202],[-122.240622,46.775928],[-122.266153,46.765542],[-122.309003,46.789587],[-122.303576,46.828117],[-122.324914,46.830344],[-122.327681,46.844343],[-122.408326,46.842547],[-122.490044,46.86688],[-122.497796,46.908843],[-122.566228,46.940425]]]}},{"type":"Feature","properties":{"CD118FP":"09","GEOID20":"5309","NAMELSAD20":"Congressional District 9"},"geometry":{"type":"Polygon","coordinates":[[[-122.437252,47.333717],[-122.351034,47.378121],[-122.365035,47.408721],[-122.329508,47.404386],[-122.323426,47.466015],[-122.31158,47.488569],[-122.292255,47.48878],[-122.318455,47.531767],[-122.291372,47.524462],[-122.321778,47.559105],[-122.324489,47.608623],[-122.265147,47.601321],[-122.263651,47.613115],[-122.220434,47.596821],[-122.217734,47.611121],[-122.196477,47.594336],[-122.174985,47.619096],[-122.096531,47.602307],[-122.100524,47.544933],[-122.142997,47.52722],[-122.148644,47.502873],[-122.121624,47.473725],[-122.164152,47.477711],[-122.124484,47.437387],[-122.175797,47.430282],[-122.1586,47.41407],[-122.18679,47.386925],[-122.178608,47.329787],[-122.20573,47.315457],[-122.229495,47.257556],[-122.334914,47.257366],[-122.437252,47.333717]]]}},{"type":"Feature","properties":{"CD118FP":"10","GEOID20":"5310","NAMELSAD20":"Congressional District 10"},"geometry":{"type":"Polygon","coordinates":[[[-123.203081,46.997084],[-123.201891,47.085059],[-123.075026,47.084787],[-123.073654,47.106242],[-123.021359,47.118094],[-123.006831,47.147992],[-122.961225,47.164437],[-122.939885,47.18993],[-122.895538,47.157145],[-122.820576,47.19422],[-122.759505,47.141315],[-122.711036,47.195957],[-122.732542,47.205818],[-122.675341,47.251319],[-122.622139,47.209219],[-122.600538,47.209719],[-122.565437,47.24682],[-122.558378,47.235349],[-122.50495,47.242912],[-122.505233,47.194336],[-122.508671,47.199245],[-122.521152,47.195521],[-122.452576,47.184616],[-122.452271,47.223144],[-122.418474,47.238112],[-122.320399,47.207017],[-122.326458,47.238327],[-122.293902,47.242744],[-122.294853,47.257246],[-122.186892,47.254053],[-122.218698,47.241733],[-122.218831,47.217173],[-122.192489,47.209363],[-122.194939,47.191944],[-122.241619,47.18635],[-122.244319,47.110705],[-122.231631,47.085843],[-122.293561,47.096461],[-122.293799,47.081873],[-122.326285,47.071495],[-122.400363,47.067989],[-122.398239,47.053337],[-122.432589,47.067963],[-122.435101,47.084195],[-122.54309,46.99927],[-122.533707,46.990521],[-122.547933,46.988852],[-122.563694,46.927178],[-122.643396,46.938012],[-122.635388,46.923615],[-122.69111,46.916001],[-122.712664,46.875945],[-122.793371,46.85889],[-122.852588,46.863896],[-122.989442,46.80963],[-122.989051,46.822436],[-123.048603,46.829106],[-123.039415,46.858402],[-123.088206,46.85423],[-123.132067,46.829249],[-123.132559,46.841433],[-123.160516,46.837479],[-123.158364,46.995871],[-123.203081,46.997084]]]}}]};
+
+  const svg = document.getElementById('rwMapSvg');
+  const mapBox = document.getElementById('rwMapBox');
+  const hoverCard = document.getElementById('rwHoverCard');
+  const select = document.getElementById('rwDistrictSelect');
+  const selectLabel = document.getElementById('rwDistrictLabel');
+  const modeSelect = document.getElementById('rwMapMode');
+  const resetBtn = document.getElementById('rwResetBtn');
+  const panelTitle = document.getElementById('rwPanelTitle');
+  const panelHint = document.getElementById('rwPanelHint');
+  const panelMembers = document.getElementById('rwPanelMembers');
+
+  let selectedLD = null;
+  let selectedCD = null;
+  let featureBounds = {};
+  let congressBounds = {};
+  let ldFeatures = {};
+  let cdFeatures = {};
+  let overlaps = {};
+  const svgCanvasBounds = {minX:0,minY:0,maxX:1000,maxY:700};
+
+  function populateDistrictSelect(mode) {
+    select.innerHTML='<option value="">Choose…</option>';
+    const isCongress = mode==='congress';
+    selectLabel.textContent = isCongress ? 'Jump to congressional district' : 'Jump to legislative district';
+    const max = isCongress ? 10 : 49;
+    for (let i=1;i<=max;i++) {
+      const o=document.createElement('option');
+      o.value=String(i);
+      o.textContent=(isCongress ? 'Congressional District ' : 'Legislative District ')+i;
+      select.appendChild(o);
+    }
+  }
+
+  populateDistrictSelect('state');
+
+  function stateMemberHTML(d) {
+    const arr=MEMBERS[d]||[];
+    return arr.map(m=>`<div class="member"><div class="role">${m.role}</div><div class="name">${m.name} <span class="party">${m.party}</span></div></div>`).join('');
+  }
+
+  function congressMemberHTML(cd) {
+    const m=CONGRESS[String(cd)];
+    if(!m) return '';
+    return `<div class="member"><div class="role">U.S. Representative · Congressional District ${cd}</div><div class="name"><a href="${m.url}" target="_blank" rel="noopener">${m.name}</a> <span class="party">${m.party}</span></div></div>`;
+  }
+
+  function senateMemberHTML() {
+    return US_SENATORS.map(m=>`<div class="member"><div class="role">U.S. Senator · Washington</div><div class="name"><a href="${m.url}" target="_blank" rel="noopener">${m.name}</a> <span class="party">${m.party}</span></div></div>`).join('');
+  }
+
+  function congressForLD(d) { return overlaps[String(d)] || []; }
+
+  // Floating hover-card builders. Keep these independent from the right-side panel.
+  // Washington's two U.S. Senators are statewide and therefore appear in every
+  // federal hover card, regardless of congressional district.
+  function senateTooltipRows() {
+    return `<div class="tip-row" style="margin-top:7px;font-weight:800">U.S. Senators · Washington</div>` +
+      `<div class="tip-row"><strong>U.S. Sen. Patty Murray</strong> (D)</div>` +
+      `<div class="tip-row"><strong>U.S. Sen. Maria Cantwell</strong> (D)</div>`;
+  }
+
+  function tooltipLD(d) {
+    const x=activeRecord(d);
+    const m=stateMembers(d);
+    return `<div class="tip-title">Legislative District ${d}${x.area ? ' · '+x.area : ''}</div>`+
+      `<div class="tip-row"><strong>${netLabel(x.net)}: ${money(x.net)}</strong> · ${ACTIVE_CASE_NAME} · FY${ACTIVE_YEAR}</div>`+
+      (x.taxStatus==='COMPARABLE_LD_PROXY' ? `<div class="tip-row" style="margin-top:4px;color:#666">Tax geography uses comparable-district proxy inputs from the updated workbook.</div>` : '')+
+      `<div class="tip-row" style="margin-top:6px"><strong>State Senator:</strong> ${m.senator.label} ${m.senator.badge}</div>`+
+      `<div class="tip-row"><strong>State Representative, Pos. 1:</strong> ${m.rep1.label} ${m.rep1.badge}</div>`+
+      `<div class="tip-row"><strong>State Representative, Pos. 2:</strong> ${m.rep2.label} ${m.rep2.badge}</div>`;
+  }
+
+  function tooltipCD(cd) {
+    const m=CONGRESS[String(cd)];
+    return `<div class="tip-title">Congressional District ${cd}</div>`+
+      `<div class="tip-row"><strong>U.S. Rep. ${m?.name||''}</strong> (${m?.party||''})</div>`+
+      `<div class="tip-row"><strong>U.S. Sen. Patty Murray</strong> (D)</div>`+
+      `<div class="tip-row"><strong>U.S. Sen. Maria Cantwell</strong> (D)</div>`+
+      `<div class="tip-row" style="margin-top:5px;font-size:11px;color:#666">Map build v1.0.6</div>`;
+  }
+
+  function showLDPanel(d,persistent=false) {
+    const x=activeRecord(d);
+    const m=stateMembers(d);
+    panelTitle.textContent='Legislative District '+d+(x.area ? ' · '+x.area : '');
+    panelHint.textContent=persistent?`Selected district · ${ACTIVE_CASE_NAME} · FY${ACTIVE_YEAR}`:`Current legislative district · ${ACTIVE_CASE_NAME} · FY${ACTIVE_YEAR}`;
+    panelMembers.innerHTML=
+      `<div class="metric"><div class="metric-label">${netLabel(x.net)} · ${ACTIVE_CASE_NAME} · FY${ACTIVE_YEAR}</div><div class="metric-value" style="color:${netTextColor(x.net)}">${money(x.net)}</div></div>`+
+      `<div class="metric"><div class="metric-label">Estimated tax incidence</div><div class="metric-value">${money(x.tax)}</div></div>`+
+      `<div class="metric"><div class="metric-label">${ACTIVE_CASE_NAME} modeled benefits</div><div class="metric-value">${money(x.benefit)}</div></div>`+
+      (x.taxStatus==='COMPARABLE_LD_PROXY' ? `<div class="crossnote">Tax incidence for this district uses the comparable-district millionaire-count and average-income proxy supplied in the updated source workbook.</div>` : '')+
+      (ACTIVE_CASE_NAME==='Model 3 · Standard Multiplier Model' ? `<div class="crossnote">Model 3 multiplies the Model 2 allocation by 1.7. This is an illustrative local-dollar effect, not an additional legislative appropriation.</div>` : '')+
+      `<div class="metric"><div class="metric-label">State Senator</div><div class="metric-value" style="font-size:.98rem">${m.senator.label} ${m.senator.badge}</div></div>`+
+      `<div class="metric"><div class="metric-label">State Representative, Pos. 1</div><div class="metric-value" style="font-size:.98rem">${m.rep1.label} ${m.rep1.badge}</div></div>`+
+      `<div class="metric"><div class="metric-label">State Representative, Pos. 2</div><div class="metric-value" style="font-size:.98rem">${m.rep2.label} ${m.rep2.badge}</div></div>`;
+    highlightCongress([]);
+  }
+
+  function showCDPanel(cd,persistent=false) {
+    panelTitle.textContent='Congressional District '+cd;
+    panelHint.textContent=persistent?'Selected congressional district':'Current congressional district under cursor';
+    panelMembers.innerHTML='<div class="section-title">U.S. House of Representatives</div>'+congressMemberHTML(cd)+
+      '<div class="section-title">U.S. Senate · Statewide</div>'+senateMemberHTML();
+    highlightCongress([String(cd)]);
+  }
+
+  function restorePanel() {
+    if(selectedLD) showLDPanel(selectedLD,true);
+    else if(selectedCD) showCDPanel(selectedCD,true);
+    else {
+      panelTitle.textContent='Select a district';
+      panelHint.textContent='Hover with a mouse, or tap/click a district on the map.';
+      panelMembers.innerHTML='';
+      highlightCongress([]);
+    }
+  }
+
+  function highlightCongress(cds) {
+    const set=new Set((cds||[]).map(String));
+    svg.querySelectorAll('.congress').forEach(p=>p.classList.toggle('is-active',set.has(p.dataset.congress)));
+  }
+
+  function positionCard(ev) {
+    const rect=mapBox.getBoundingClientRect();
+    const pad=12;
+    // Measure the ACTUAL hover-card size after its content is inserted.
+    // The card became taller when U.S. Senators were added; using the old
+    // fixed 210px estimate could place the Senator rows below the mapbox,
+    // where overflow:hidden clipped them from view.
+    const cardW=Math.max(245,hoverCard.offsetWidth || 305);
+    const cardH=Math.max(1,hoverCard.offsetHeight || 210);
+    let x=ev.clientX-rect.left+16;
+    let y=ev.clientY-rect.top+16;
+    if(x+cardW>rect.width-pad) x=ev.clientX-rect.left-cardW-16;
+    if(y+cardH>rect.height-pad) y=ev.clientY-rect.top-cardH-16;
+    // Keep the entire card inside the map whenever possible.
+    x=Math.max(pad,Math.min(x,rect.width-cardW-pad));
+    y=Math.max(pad,Math.min(y,rect.height-cardH-pad));
+    hoverCard.style.left=x+'px';
+    hoverCard.style.top=y+'px';
+  }
+
+  function mercator(lon,lat) {
+    const x = lon * Math.PI / 180;
+    const clamped = Math.max(-85,Math.min(85,lat));
+    const y = Math.log(Math.tan(Math.PI/4 + clamped*Math.PI/360));
+    return [x,y];
+  }
+
+  function walkCoords(coords, fn) {
+    if (typeof coords[0] === 'number') fn(coords);
+    else coords.forEach(c=>walkCoords(c,fn));
+  }
+
+  function projectedBounds(geo) {
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    geo.features.forEach(f=>walkCoords(f.geometry.coordinates,([lon,lat])=>{
+      const [x,y]=mercator(lon,lat);
+      minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y); maxY=Math.max(maxY,y);
+    }));
+    return {minX,minY,maxX,maxY};
+  }
+
+  function makeProjector(bounds) {
+    const W=1000,H=700,pad=28;
+    const sx=(W-2*pad)/(bounds.maxX-bounds.minX);
+    const sy=(H-2*pad)/(bounds.maxY-bounds.minY);
+    const s=Math.min(sx,sy);
+    const usedW=(bounds.maxX-bounds.minX)*s;
+    const usedH=(bounds.maxY-bounds.minY)*s;
+    const ox=(W-usedW)/2;
+    const oy=(H-usedH)/2;
+    return (lon,lat)=>{
+      const [x,y]=mercator(lon,lat);
+      return [ox+(x-bounds.minX)*s, H-(oy+(y-bounds.minY)*s)];
+    };
+  }
+
+  function ringPath(ring,project) {
+    return ring.map((p,i)=>{
+      const [x,y]=project(p[0],p[1]);
+      return `${i?'L':'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(' ')+' Z';
+  }
+
+  function geometryPath(geometry,project) {
+    if(geometry.type==='Polygon') return geometry.coordinates.map(r=>ringPath(r,project)).join(' ');
+    if(geometry.type==='MultiPolygon') return geometry.coordinates.flatMap(poly=>poly.map(r=>ringPath(r,project))).join(' ');
+    return '';
+  }
+
+  function boundsForGeometry(geometry,project) {
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    walkCoords(geometry.coordinates,([lon,lat])=>{
+      const [x,y]=project(lon,lat);
+      minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+    });
+    return {minX,minY,maxX,maxY};
+  }
+
+  function setView(b,pad=35) {
+    const x=Math.max(0,b.minX-pad), y=Math.max(0,b.minY-pad);
+    const w=Math.min(1000-x,(b.maxX-b.minX)+pad*2);
+    const h=Math.min(700-y,(b.maxY-b.minY)+pad*2);
+    svg.setAttribute('viewBox',`${x} ${y} ${Math.max(20,w)} ${Math.max(20,h)}`);
+  }
+
+  // Exact polygon-overlap test sufficient for district boundaries: vertex containment + segment crossing.
+  function ringsOf(g) {
+    if(g.type==='Polygon') return g.coordinates;
+    if(g.type==='MultiPolygon') return g.coordinates.flat();
+    return [];
+  }
+  function pointInRing(p,ring) {
+    let inside=false;
+    for(let i=0,j=ring.length-1;i<ring.length;j=i++) {
+      const xi=ring[i][0], yi=ring[i][1], xj=ring[j][0], yj=ring[j][1];
+      const hit=((yi>p[1])!==(yj>p[1])) && (p[0] < (xj-xi)*(p[1]-yi)/(yj-yi)+xi);
+      if(hit) inside=!inside;
+    }
+    return inside;
+  }
+  function pointInGeom(p,g) {
+    if(g.type==='Polygon') return g.coordinates.length && pointInRing(p,g.coordinates[0]);
+    if(g.type==='MultiPolygon') return g.coordinates.some(poly=>poly.length && pointInRing(p,poly[0]));
+    return false;
+  }
+  function orient(a,b,c) { return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]); }
+  function onSeg(a,b,p) { return Math.min(a[0],b[0])-1e-10<=p[0]&&p[0]<=Math.max(a[0],b[0])+1e-10&&Math.min(a[1],b[1])-1e-10<=p[1]&&p[1]<=Math.max(a[1],b[1])+1e-10; }
+  function segIntersect(a,b,c,d) {
+    const o1=orient(a,b,c),o2=orient(a,b,d),o3=orient(c,d,a),o4=orient(c,d,b),e=1e-12;
+    if(((o1>e&&o2<-e)||(o1<-e&&o2>e))&&((o3>e&&o4<-e)||(o3<-e&&o4>e))) return true;
+    if(Math.abs(o1)<=e&&onSeg(a,b,c)) return true;
+    if(Math.abs(o2)<=e&&onSeg(a,b,d)) return true;
+    if(Math.abs(o3)<=e&&onSeg(c,d,a)) return true;
+    if(Math.abs(o4)<=e&&onSeg(c,d,b)) return true;
+    return false;
+  }
+  function geomIntersects(a,b) {
+    const ra=ringsOf(a), rb=ringsOf(b);
+    for(const ring of ra) for(const p of ring) if(pointInGeom(p,b)) return true;
+    for(const ring of rb) for(const p of ring) if(pointInGeom(p,a)) return true;
+    for(const A of ra) for(const B of rb) {
+      for(let i=1;i<A.length;i++) for(let j=1;j<B.length;j++) if(segIntersect(A[i-1],A[i],B[j-1],B[j])) return true;
+    }
+    return false;
+  }
+
+  function chooseLD(d,zoom=true) {
+    selectedLD=String(d); selectedCD=null;
+    select.value=selectedLD;
+    svg.querySelectorAll('.district').forEach(p=>p.classList.toggle('is-selected',p.dataset.district===selectedLD));
+    showLDPanel(selectedLD,true);
+    if(zoom && featureBounds[selectedLD]) setView(featureBounds[selectedLD],45);
+  }
+
+  function chooseCD(cd,zoom=true) {
+    selectedCD=String(cd); selectedLD=null; select.value=selectedCD;
+    svg.querySelectorAll('.district').forEach(p=>p.classList.remove('is-selected'));
+    showCDPanel(selectedCD,true);
+    if(zoom && congressBounds[selectedCD]) setView(congressBounds[selectedCD],45);
+  }
+
+  function resetMap() {
+    selectedLD=null; selectedCD=null; select.value='';
+    svg.querySelectorAll('.district').forEach(p=>p.classList.remove('is-selected'));
+    highlightCongress([]);
+    setView(svgCanvasBounds,0);
+    restorePanel();
+  }
+
+  function setMode(mode) {
+    ROOT.classList.remove('mode-both','mode-state','mode-congress');
+    ROOT.classList.add('mode-'+mode);
+
+    // v2.3.3: each menu choice now controls visibility as well as interaction.
+    // Switching modes also clears all prior selections, hover states, and zoom.
+    selectedLD=null;
+    selectedCD=null;
+    populateDistrictSelect(mode);
+    select.value='';
+    hoverCard.classList.remove('visible');
+    hoverCard.setAttribute('aria-hidden','true');
+
+    svg.querySelectorAll('.district').forEach(p=>{
+      p.classList.remove('is-hover','is-selected');
+      p.style.display = mode==='congress' ? 'none' : '';
+      p.style.pointerEvents = mode==='congress' ? 'none' : 'auto';
+      p.setAttribute('tabindex', mode==='congress' ? '-1' : '0');
+    });
+    svg.querySelectorAll('.congress').forEach(p=>{
+      p.classList.remove('is-hover','is-active');
+      p.style.display = mode==='state' ? 'none' : '';
+      p.style.pointerEvents = mode==='congress' ? 'auto' : 'none';
+      p.setAttribute('tabindex', mode==='congress' ? '0' : '-1');
+    });
+
+    setView(svgCanvasBounds,0);
+
+    if(mode==='congress') {
+      panelTitle.textContent='Select a congressional district';
+      panelHint.textContent='Hover with a mouse, or tap/click a U.S. congressional district on the map. Washington’s two U.S. Senators will appear with the district representative.';
+      panelMembers.innerHTML='<div class="section-title">U.S. Senate · Statewide</div>'+senateMemberHTML();
+    } else if(mode==='state') {
+      panelTitle.textContent='Select a legislative district';
+      panelHint.textContent='Hover with a mouse, or tap/click a Washington legislative district on the map.';
+      panelMembers.innerHTML='';
+    } else {
+      panelTitle.textContent='Select a legislative district';
+      panelHint.textContent='Hover with a mouse, or tap/click a Washington legislative district to see state and U.S. House representation.';
+      panelMembers.innerHTML='';
+    }
+  }
+
+  fetch(LD_URL)
+    .then(r=>{if(!r.ok) throw new Error('Legislative boundary service returned '+r.status);return r.json();})
+    .then(ldGeo=>{
+      const cdGeo = CD_GEO;
+    if(!ldGeo?.features?.length || !cdGeo?.features?.length) throw new Error('One or more boundary responses were not valid GeoJSON.');
+    const project=makeProjector(projectedBounds(ldGeo));
+    const ns='http://www.w3.org/2000/svg';
+
+    cdGeo.features.forEach(f=>{
+      const cd=String(f.properties.CD118FP ?? f.properties.ID ?? f.properties.DISTRICT).replace(/^0+/,'');
+      cdFeatures[cd]=f;
+    });
+    ldGeo.features.forEach(f=>{ ldFeatures[String(f.properties.NDISTRICT)]=f; });
+
+    Object.keys(ldFeatures).forEach(ld=>{
+      overlaps[ld]=Object.keys(cdFeatures).filter(cd=>geomIntersects(ldFeatures[ld].geometry,cdFeatures[cd].geometry)).sort((a,b)=>Number(a)-Number(b));
+    });
+
+    ldGeo.features.slice().sort((a,b)=>Number(a.properties.NDISTRICT)-Number(b.properties.NDISTRICT)).forEach(feature=>{
+      const d=String(feature.properties.NDISTRICT);
+      const path=document.createElementNS(ns,'path');
+      path.setAttribute('d',geometryPath(feature.geometry,project));
+      path.setAttribute('class','district'); path.setAttribute('fill-rule','evenodd');
+      path.dataset.district=d; path.style.fill=fiscalColor(activeRecord(d).net); path.style.strokeDasharray=activeRecord(d).net==null?'5 3':''; path.setAttribute('tabindex','0');
+      path.setAttribute('aria-label','Legislative District '+d);
+      featureBounds[d]=boundsForGeometry(feature.geometry,project);
+
+      path.addEventListener('mouseenter',ev=>{
+        if(modeSelect.value==='congress') return;
+        path.classList.add('is-hover'); hoverCard.innerHTML=tooltipLD(d); hoverCard.classList.add('visible');
+        hoverCard.setAttribute('aria-hidden','false'); positionCard(ev); showLDPanel(d,false);
+      });
+      path.addEventListener('mousemove',ev=>{if(modeSelect.value!=='congress') positionCard(ev);});
+      path.addEventListener('mouseleave',()=>{
+        if(modeSelect.value==='congress') return;
+        path.classList.remove('is-hover');hoverCard.classList.remove('visible');hoverCard.setAttribute('aria-hidden','true');restorePanel();
+      });
+      path.addEventListener('click',()=>{if(modeSelect.value!=='congress') chooseLD(d,false);});
+      path.addEventListener('pointerup',ev=>{
+        if(modeSelect.value==='congress' || ev.pointerType==='mouse') return;
+        ev.preventDefault();
+        chooseLD(d,false);
+        document.querySelector('#rw-ldmap-v24 .panel')?.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+      path.addEventListener('focus',()=>showLDPanel(d,false));
+      path.addEventListener('blur',restorePanel);
+      path.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();chooseLD(d,false);}});
+      svg.appendChild(path);
+    });
+
+    cdGeo.features.slice().sort((a,b)=>Number(a.properties.CD118FP ?? a.properties.ID ?? a.properties.DISTRICT)-Number(b.properties.CD118FP ?? b.properties.ID ?? b.properties.DISTRICT)).forEach(feature=>{
+      const cd=String(feature.properties.CD118FP ?? feature.properties.ID ?? feature.properties.DISTRICT).replace(/^0+/,'');
+      const path=document.createElementNS(ns,'path');
+      path.setAttribute('d',geometryPath(feature.geometry,project));
+      path.setAttribute('class','congress'); path.setAttribute('fill-rule','evenodd');
+      path.style.pointerEvents='none';
+      path.dataset.congress=cd; path.setAttribute('tabindex','-1');
+      path.setAttribute('aria-label','Congressional District '+cd);
+      congressBounds[cd]=boundsForGeometry(feature.geometry,project);
+      path.addEventListener('mouseenter',ev=>{
+        if(modeSelect.value!=='congress') return;
+        path.classList.add('is-hover'); hoverCard.innerHTML=tooltipCD(cd); hoverCard.classList.add('visible');
+        hoverCard.setAttribute('aria-hidden','false'); positionCard(ev); showCDPanel(cd,false);
+      });
+      path.addEventListener('mousemove',ev=>{if(modeSelect.value==='congress')positionCard(ev);});
+      path.addEventListener('mouseleave',()=>{
+        if(modeSelect.value!=='congress') return;
+        path.classList.remove('is-hover');hoverCard.classList.remove('visible');hoverCard.setAttribute('aria-hidden','true');restorePanel();
+      });
+      path.addEventListener('click',()=>{if(modeSelect.value==='congress')chooseCD(cd,false);});
+      svg.appendChild(path);
+    });
+
+    setView(svgCanvasBounds,0);
+    setMode(modeSelect.value);
+  }).catch(err=>{
+    svg.outerHTML=`<div class="status"><strong>Map could not load the state legislative layer.</strong><br>${err.message}<br><span style="font-weight:400">The embedded U.S. House boundary snapshot is present, but the state legislative layer still requires the current Washington OFM/WSDOT service.</span></div>`;
+  });
+
+
+  function refreshFiscalView(){
+    svg.querySelectorAll('.district').forEach(path=>{
+      const d=path.dataset.district; if(!d)return; const x=activeRecord(d);
+      path.style.fill=fiscalColor(x.net); path.style.strokeDasharray='';
+    });
+    if(selectedLD) showLDPanel(selectedLD,true);
+  }
+  function applyFiscalCase(which){ ACTIVE_CASE_NAME=which==='model1'?'Model 1 · Equal Share Model':(which==='model3'?'Model 3 · Standard Multiplier Model':'Model 2 · Demographic Model'); refreshFiscalView(); }
+  document.querySelectorAll('#rw-ldmap-v24 input[name="rwFiscalCase"]').forEach(radio=>radio.addEventListener('change',()=>applyFiscalCase(radio.value)));
+
+  select.addEventListener('change',()=>{
+    if(!select.value) return;
+    if(modeSelect.value==='congress') chooseCD(select.value,true);
+    else chooseLD(select.value,true);
+  });
+  modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
+  resetBtn.addEventListener('click',resetMap);
+  setMode('state');
+})();
+</script>
