@@ -1,0 +1,144 @@
+====================================================================================================
+MILLIONAIRE TAX INCIDENCE v0.2 - STAGE 9 METHODOLOGY FREEZE
+====================================================================================================
+
+STATUS
+------
+
+Stage 9 is CLOSED.
+
+No preferred legislative-district millionaire-AGI model was selected.
+
+
+AUTHORITATIVE STATEWIDE CONTROLS
+--------------------------------
+
+TY2022 millionaire returns      : 21,530
+TY2022 millionaire AGI          : $65,956,796,000
+First-$1M floor AGI             : $21,530,000,000
+Excess AGI                      : $44,426,796,000
+
+
+EVIDENCE HIERARCHY
+------------------
+
+1. STATEWIDE IRS CONTROLS
+
+   The statewide number of millionaire returns and aggregate
+   millionaire AGI are authoritative IRS controls.
+
+2. MILLIONAIRE GEOGRAPHY v0.2
+
+   The 49-LD distribution of millionaire returns is the principal
+   modeled geographic result.
+
+   It was constructed from independently allocated IRS ZIP data,
+   selected through predeclared out-of-sample validation against
+   independent Washington DOR capital-gains taxpayer geography,
+   and reconciled exactly to the statewide IRS millionaire-return
+   control.
+
+3. LEGISLATIVE-DISTRICT MILLIONAIRE AGI
+
+   Legislative-district millionaire AGI is materially less
+   identified by available public data.
+
+   No observed 49-LD millionaire-AGI answer key is available for
+   direct model fitting or independent model selection.
+
+   Stage 9 therefore does not designate a single preferred
+   legislative-district millionaire-AGI estimate.
+
+
+STAGE 9A FINDING
+----------------
+
+Congressional-district validation identified three IRS upper-tail
+dollar variables with HIGH geographic reliability:
+
+   A00100 - Adjusted gross income
+   A00900 - Business/profession net income
+   A01700 - Taxable pensions and annuities
+
+No variables were classified MODERATE.
+
+The following were classified LOW for geographic transportability:
+
+   A00300 - Taxable interest
+   A00600 - Ordinary dividends
+   A01000 - Net capital gain
+   A26270 - Partnership/S-corporation net income
+
+
+STAGE 9B FINDING
+----------------
+
+Seven predeclared excess-AGI allocation scenarios were retained:
+
+   E0_COUNT
+   E1_AGI
+   E2_BUSINESS
+   E3_PENSION
+   E4_COUNT_AGI_GM
+   E5_COUNT_AGI_BUSINESS_GM
+   E6_COUNT_AGI_BUSINESS_PENSION_GM
+
+Every scenario reconciles independently to the same statewide
+excess-AGI control of $44,426,796,000.
+
+The scenarios show strong broad geographic agreement but
+material dollar uncertainty for some individual districts.
+
+Accordingly, Stage 9B is retained as a SENSITIVITY ANALYSIS.
+
+No E0-E6 scenario is designated the preferred, correct,
+best-fitting, or true LD millionaire-AGI distribution.
+
+
+DOWNSTREAM USE POLICY
+---------------------
+
+Millionaire-count geography may be used as the principal
+49-LD estimate, subject to its documented modeling limitations.
+
+LD millionaire-AGI values must be described as modeled
+sensitivity scenarios rather than observed values.
+
+Any downstream tax-dollar or dollar-incidence estimate based
+on LD millionaire AGI inherits Stage 9B allocation uncertainty.
+
+Where a single illustrative AGI scenario is displayed for
+communication purposes, it must be explicitly labeled
+illustrative and must not be described as empirically selected
+unless new independent validation evidence is obtained.
+
+For uncertainty-sensitive reporting, the E0-E6 range or
+scenario envelope is preferred to false point precision.
+
+
+PROVENANCE FIREWALL
+-------------------
+
+Historical legislative-district millionaire estimates did not
+enter Stage 9 predictor construction, validation, allocation,
+scenario construction, or methodological closure.
+
+Stage 9C performs no model fitting, no scenario selection,
+no new geographic allocation, and no database writes.
+
+
+REOPENING RULE
+--------------
+
+Stage 9 should be reopened only if materially new independent
+evidence becomes available that can identify or validate
+legislative-district millionaire AGI geography.
+
+Additional model complexity alone is not sufficient reason
+to reopen Stage 9.
+
+
+FINAL STATUS
+------------
+
+STAGE 9 FROZEN.
