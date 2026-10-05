@@ -4,3 +4,37 @@ __pycache__/
 .env
 .DS_Store
 Thumbs.db
+
+# Microsoft Office temporary lock files
+~$*
+
+# Root-level diagnostic / console capture files
+/*_output.txt
+/*_profile.txt
+/*_first*.txt
+/*_inventory.txt
+/*_diagnostic.txt
+/*_columns.txt
+
+# One-off extracted Census inspection file
+/tab20_zcta520_tabblock20_st53.txt
+
+# Large reproducible Census source files - reacquire from authoritative source
+/data/raw/census/tab20_zcta520_tabblock20_natl.txt
+/data/raw/census/congressional_district_validation/tl_2020_53_tabblock20.zip
+/data/raw/census/congressional_district_validation/tl_2021_us_cd116.zip
+/data/raw/census/pl2020/wa2020.pl.zip
+
+# Microsoft Office temporary lock files
+~$*
+
+# Root-level temporary diagnostics / console captures
+/*_output.txt
+/*_profile.txt
+/*_first*.txt
+/*_inventory.txt
+/*_diagnostic.txt
+/*_columns.txt
+
+# One-off extracted Census diagnostic
+/tab20_zcta520_tabblock20_st53.txt
