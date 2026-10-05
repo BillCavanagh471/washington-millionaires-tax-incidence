@@ -1,0 +1,7 @@
+category,account,tax_type,fy2027,fy2027_29,fy2029_31,incidence_class,model_status
+millionaires_tax,GF-State,New millionaire tax,0,2698000000,6899000000,tax_source,control
+retail_sales_tax,GF-State,Retail sales tax,-48700000,-423120000,-1708090000,mixed_tax_relief,requires_decomposition
+bo_tax,GF-State,Business and occupation tax,1100000,-13600000,-50800000,business_tax_change,requires_decomposition
+retail_sales_tax,Multimodal Transportation Account,Retail sales tax,0,-7467000,-26730000,mixed_tax_relief,requires_decomposition
+bo_tax,Workforce Education Investment Account,Business and occupation tax,1200000,47900000,232000000,business_tax_change,requires_decomposition
+retail_sales_tax,Performance Audits of Government Account,Retail sales tax,-78000,-703000,-2751000,mixed_tax_relief,requires_decomposition

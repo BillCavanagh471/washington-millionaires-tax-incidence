@@ -1,0 +1,382 @@
+{
+  "year": 2024,
+  "dataset": "ACS 5-Year Estimates Detailed Tables",
+  "group": "B09001",
+  "state_fips": "53",
+  "geography": "Washington State Legislative District (Upper Chamber)",
+  "method": "Fair Start baseline geographic proxy = B09001_003E (under 3 years in households) + B09001_004E (3 and 4 years in households).",
+  "metadata_url": "https://api.census.gov/data/2024/acs/acs5/groups/B09001.json",
+  "data_url": "https://api.census.gov/data/2024/acs/acs5?get=NAME,B09001_003E,B09001_004E&for=state+legislative+district+%28upper+chamber%29:*&in=state:53&key=eced226a1d2c0c69dcbd1db6075f1915e57da35a",
+  "selected_variables": {
+    "B09001_003E": {
+      "label": "Estimate!!Total:!!In households:!!Under 3 years",
+      "concept": "Population Under 18 Years by Age",
+      "predicateType": "int",
+      "group": "B09001",
+      "limit": 0,
+      "predicateOnly": true,
+      "universe": "Population under 18 years"
+    },
+    "B09001_004E": {
+      "label": "Estimate!!Total:!!In households:!!3 and 4 years",
+      "concept": "Population Under 18 Years by Age",
+      "predicateType": "int",
+      "group": "B09001",
+      "limit": 0,
+      "predicateOnly": true,
+      "universe": "Population under 18 years"
+    }
+  },
+  "api_response": [
+    [
+      "NAME",
+      "B09001_003E",
+      "B09001_004E",
+      "state",
+      "state legislative district (upper chamber)"
+    ],
+    [
+      "Legislative (Senate) District 1 (2024); Washington",
+      "6082",
+      "4027",
+      "53",
+      "001"
+    ],
+    [
+      "Legislative (Senate) District 2 (2024); Washington",
+      "5403",
+      "4233",
+      "53",
+      "002"
+    ],
+    [
+      "Legislative (Senate) District 3 (2024); Washington",
+      "4640",
+      "2875",
+      "53",
+      "003"
+    ],
+    [
+      "Legislative (Senate) District 4 (2024); Washington",
+      "5523",
+      "3986",
+      "53",
+      "004"
+    ],
+    [
+      "Legislative (Senate) District 5 (2024); Washington",
+      "5119",
+      "3848",
+      "53",
+      "005"
+    ],
+    [
+      "Legislative (Senate) District 6 (2024); Washington",
+      "5567",
+      "4079",
+      "53",
+      "006"
+    ],
+    [
+      "Legislative (Senate) District 7 (2024); Washington",
+      "5139",
+      "3359",
+      "53",
+      "007"
+    ],
+    [
+      "Legislative (Senate) District 8 (2024); Washington",
+      "5450",
+      "4752",
+      "53",
+      "008"
+    ],
+    [
+      "Legislative (Senate) District 9 (2024); Washington",
+      "5246",
+      "3209",
+      "53",
+      "009"
+    ],
+    [
+      "Legislative (Senate) District 10 (2024); Washington",
+      "3974",
+      "3555",
+      "53",
+      "010"
+    ],
+    [
+      "Legislative (Senate) District 11 (2024); Washington",
+      "5518",
+      "3889",
+      "53",
+      "011"
+    ],
+    [
+      "Legislative (Senate) District 12 (2024); Washington",
+      "5426",
+      "4283",
+      "53",
+      "012"
+    ],
+    [
+      "Legislative (Senate) District 13 (2024); Washington",
+      "5969",
+      "4223",
+      "53",
+      "013"
+    ],
+    [
+      "Legislative (Senate) District 14 (2024); Washington",
+      "6747",
+      "5270",
+      "53",
+      "014"
+    ],
+    [
+      "Legislative (Senate) District 15 (2024); Washington",
+      "5647",
+      "4342",
+      "53",
+      "015"
+    ],
+    [
+      "Legislative (Senate) District 16 (2024); Washington",
+      "6374",
+      "4390",
+      "53",
+      "016"
+    ],
+    [
+      "Legislative (Senate) District 17 (2024); Washington",
+      "4221",
+      "3685",
+      "53",
+      "017"
+    ],
+    [
+      "Legislative (Senate) District 18 (2024); Washington",
+      "4987",
+      "3357",
+      "53",
+      "018"
+    ],
+    [
+      "Legislative (Senate) District 19 (2024); Washington",
+      "4579",
+      "3576",
+      "53",
+      "019"
+    ],
+    [
+      "Legislative (Senate) District 20 (2024); Washington",
+      "6223",
+      "4485",
+      "53",
+      "020"
+    ],
+    [
+      "Legislative (Senate) District 21 (2024); Washington",
+      "5130",
+      "3667",
+      "53",
+      "021"
+    ],
+    [
+      "Legislative (Senate) District 22 (2024); Washington",
+      "4643",
+      "3553",
+      "53",
+      "022"
+    ],
+    [
+      "Legislative (Senate) District 23 (2024); Washington",
+      "4986",
+      "3517",
+      "53",
+      "023"
+    ],
+    [
+      "Legislative (Senate) District 24 (2024); Washington",
+      "3491",
+      "2740",
+      "53",
+      "024"
+    ],
+    [
+      "Legislative (Senate) District 25 (2024); Washington",
+      "5187",
+      "4547",
+      "53",
+      "025"
+    ],
+    [
+      "Legislative (Senate) District 26 (2024); Washington",
+      "4563",
+      "3177",
+      "53",
+      "026"
+    ],
+    [
+      "Legislative (Senate) District 27 (2024); Washington",
+      "4946",
+      "3043",
+      "53",
+      "027"
+    ],
+    [
+      "Legislative (Senate) District 28 (2024); Washington",
+      "6326",
+      "4162",
+      "53",
+      "028"
+    ],
+    [
+      "Legislative (Senate) District 29 (2024); Washington",
+      "5908",
+      "4060",
+      "53",
+      "029"
+    ],
+    [
+      "Legislative (Senate) District 30 (2024); Washington",
+      "5370",
+      "4807",
+      "53",
+      "030"
+    ],
+    [
+      "Legislative (Senate) District 31 (2024); Washington",
+      "5791",
+      "4560",
+      "53",
+      "031"
+    ],
+    [
+      "Legislative (Senate) District 32 (2024); Washington",
+      "4764",
+      "3859",
+      "53",
+      "032"
+    ],
+    [
+      "Legislative (Senate) District 33 (2024); Washington",
+      "5862",
+      "4112",
+      "53",
+      "033"
+    ],
+    [
+      "Legislative (Senate) District 34 (2024); Washington",
+      "4975",
+      "3784",
+      "53",
+      "034"
+    ],
+    [
+      "Legislative (Senate) District 35 (2024); Washington",
+      "4395",
+      "3792",
+      "53",
+      "035"
+    ],
+    [
+      "Legislative (Senate) District 36 (2024); Washington",
+      "4156",
+      "2815",
+      "53",
+      "036"
+    ],
+    [
+      "Legislative (Senate) District 37 (2024); Washington",
+      "5054",
+      "3134",
+      "53",
+      "037"
+    ],
+    [
+      "Legislative (Senate) District 38 (2024); Washington",
+      "5261",
+      "3519",
+      "53",
+      "038"
+    ],
+    [
+      "Legislative (Senate) District 39 (2024); Washington",
+      "6136",
+      "4067",
+      "53",
+      "039"
+    ],
+    [
+      "Legislative (Senate) District 40 (2024); Washington",
+      "3347",
+      "2843",
+      "53",
+      "040"
+    ],
+    [
+      "Legislative (Senate) District 41 (2024); Washington",
+      "3851",
+      "3277",
+      "53",
+      "041"
+    ],
+    [
+      "Legislative (Senate) District 42 (2024); Washington",
+      "4765",
+      "3677",
+      "53",
+      "042"
+    ],
+    [
+      "Legislative (Senate) District 43 (2024); Washington",
+      "1651",
+      "1252",
+      "53",
+      "043"
+    ],
+    [
+      "Legislative (Senate) District 44 (2024); Washington",
+      "5830",
+      "4129",
+      "53",
+      "044"
+    ],
+    [
+      "Legislative (Senate) District 45 (2024); Washington",
+      "5278",
+      "3846",
+      "53",
+      "045"
+    ],
+    [
+      "Legislative (Senate) District 46 (2024); Washington",
+      "5141",
+      "2605",
+      "53",
+      "046"
+    ],
+    [
+      "Legislative (Senate) District 47 (2024); Washington",
+      "5762",
+      "3565",
+      "53",
+      "047"
+    ],
+    [
+      "Legislative (Senate) District 48 (2024); Washington",
+      "4163",
+      "3618",
+      "53",
+      "048"
+    ],
+    [
+      "Legislative (Senate) District 49 (2024); Washington",
+      "5108",
+      "3547",
+      "53",
+      "049"
+    ]
+  ]
+}
