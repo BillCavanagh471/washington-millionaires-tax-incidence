@@ -41,7 +41,6 @@ body {
 #map {
     height: 100%;
     width: 100%;
-    min-height: 0;
     background: #e7ecef;
 }
 
@@ -190,6 +189,32 @@ select {
     line-height: 1.45;
 }
 
+.map-legend {
+    padding: 9px 11px;
+    background: rgba(255,255,255,0.96);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.25);
+    font-size: 11px;
+    line-height: 17px;
+}
+
+.legend-title {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.legend-row {
+    white-space: nowrap;
+}
+
+.swatch {
+    display: inline-block;
+    width: 15px;
+    height: 11px;
+    margin-right: 5px;
+    border: 1px solid #777777;
+    vertical-align: -1px;
+}
 
 @media (max-width: 850px) {
 
@@ -197,7 +222,8 @@ select {
         grid-template-columns: 1fr;
         grid-template-rows: 57% 43%;
     }
-#panel {
+
+    #panel {
         border-left: none;
         border-top: 1px solid #cccccc;
         padding: 15px;
@@ -232,40 +258,6 @@ select {
 .legislator-role {
     color: #666666;
     font-size: 11px;
-}
-
-
-.map-legend {
-    background: rgba(255,255,255,0.94);
-    padding: 8px 10px;
-    border: 1px solid #c9c9c9;
-    border-radius: 5px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
-    font-size: 11px;
-    line-height: 1.35;
-}
-.map-legend-title {
-    font-weight: 700;
-    margin-bottom: 5px;
-}
-.map-legend-row {
-    white-space: nowrap;
-    margin: 2px 0;
-}
-.map-legend-swatch {
-    display: inline-block;
-    width: 13px;
-    height: 10px;
-    margin-right: 5px;
-    border: 1px solid #777;
-    vertical-align: -1px;
-}
-
-
-@media (max-width: 760px) {
-    #map {
-        touch-action: pan-y;
-    }
 }
 
 </style>
@@ -520,30 +512,6 @@ const map = L.map(
         scrollWheelZoom: false
     }
 );
-
-function applyMobileMapInteractionPolicy() {
-    const mobileLayout = window.matchMedia("(max-width: 760px)").matches;
-
-    if (mobileLayout) {
-        map.dragging.disable();
-        map.touchZoom.disable();
-        map.doubleClickZoom.disable();
-        map.scrollWheelZoom.disable();
-        map.boxZoom.disable();
-        map.keyboard.disable();
-
-        if (map.tap && map.tap.disable) {
-            map.tap.disable();
-        }
-
-        if (map.zoomControl) {
-            map.zoomControl.remove();
-        }
-    }
-}
-
-applyMobileMapInteractionPolicy();
-
 
 L.control.scale(
     {
@@ -862,35 +830,6 @@ WHOLE STATE
 =========================================================================
 */
 
-const legend = L.control({ position: "bottomleft" });
-
-legend.onAdd = function () {
-    const div = L.DomUtil.create("div", "map-legend");
-    div.innerHTML = `
-        <div class="map-legend-title">Net incidence</div>
-        <div class="map-legend-row"><span class="map-legend-swatch" style="background:#8b1a1a"></span>Robust donor</div>
-        <div class="map-legend-row"><span class="map-legend-swatch" style="background:#d46a4c"></span>Likely donor</div>
-        <div class="map-legend-row"><span class="map-legend-swatch" style="background:#d7c66b"></span>Scenario-dependent</div>
-        <div class="map-legend-row"><span class="map-legend-swatch" style="background:#79b66a"></span>Likely recipient</div>
-        <div class="map-legend-row"><span class="map-legend-swatch" style="background:#1f6b3a"></span>Robust recipient</div>
-    `;
-    L.DomEvent.disableClickPropagation(div);
-    return div;
-};
-
-legend.addTo(map);
-
-
-function fitWashingtonLarger() {
-    map.fitBounds(
-        geojsonLayer.getBounds(),
-        {
-            padding: [24, 24]
-        }
-    );
-}
-
-
 function renderWholeState() {
 
     if (selectedLayer) {
@@ -965,7 +904,12 @@ function renderWholeState() {
     districtSelect.value =
         "WHOLE_STATE";
 
-    fitWashingtonLarger();
+    map.fitBounds(
+        geojsonLayer.getBounds(),
+        {
+            padding: [15, 15]
+        }
+    );
 }
 
 
@@ -1084,7 +1028,12 @@ const geojsonLayer =
     .addTo(map);
 
 
-fitWashingtonLarger();
+map.fitBounds(
+    geojsonLayer.getBounds(),
+    {
+        padding: [15, 15]
+    }
+);
 
 
 /*
@@ -1182,6 +1131,144 @@ LEGEND
 =========================================================================
 */
 
+const legend =
+    L.control(
+        {
+            position: "bottomleft"
+        }
+    );
+
+
+legend.onAdd =
+    function() {
+
+        this._div =
+            L.DomUtil.create(
+                "div",
+                "map-legend"
+            );
+
+        this.update();
+
+        return this._div;
+    };
+
+
+legend.update =
+    function() {
+
+        if (!this._div) {
+            return;
+        }
+
+
+        if (currentView === "net") {
+
+            this._div.innerHTML =
+                '<div class="legend-title">'
+                + 'Net incidence classification'
+                + '</div>'
+                + legendRow(
+                    CLASS_COLORS.ROBUST_DONOR,
+                    "Robust donor"
+                )
+                + legendRow(
+                    CLASS_COLORS.LIKELY_DONOR,
+                    "Likely donor"
+                )
+                + legendRow(
+                    CLASS_COLORS.SCENARIO_DEPENDENT,
+                    "Scenario-dependent"
+                )
+                + legendRow(
+                    CLASS_COLORS.LIKELY_RECIPIENT,
+                    "Likely recipient"
+                )
+                + legendRow(
+                    CLASS_COLORS.ROBUST_RECIPIENT,
+                    "Robust recipient"
+                );
+
+            return;
+        }
+
+
+        if (currentView === "tax") {
+
+            this._div.innerHTML =
+                '<div class="legend-title">'
+                + 'Tax-harvest range midpoint'
+                + '</div>'
+                + legendRow(
+                    "#762a83",
+                    "$200M+"
+                )
+                + legendRow(
+                    "#9970ab",
+                    "$125M-$200M"
+                )
+                + legendRow(
+                    "#c2a5cf",
+                    "$75M-$125M"
+                )
+                + legendRow(
+                    "#d9d9d9",
+                    "$40M-$75M"
+                )
+                + legendRow(
+                    "#f0f0f0",
+                    "Under $40M"
+                );
+
+            return;
+        }
+
+
+        this._div.innerHTML =
+            '<div class="legend-title">'
+            + 'Modeled benefit allocation'
+            + '</div>'
+            + legendRow(
+                "#2166ac",
+                "$70M+"
+            )
+            + legendRow(
+                "#4393c3",
+                "$60M-$70M"
+            )
+            + legendRow(
+                "#92c5de",
+                "$50M-$60M"
+            )
+            + legendRow(
+                "#d1e5f0",
+                "$40M-$50M"
+            )
+            + legendRow(
+                "#f7f7f7",
+                "Under $40M"
+            );
+    };
+
+
+function legendRow(
+    color,
+    label
+) {
+
+    return (
+        '<div class="legend-row">'
+        + '<span class="swatch" '
+        + 'style="background:'
+        + color
+        + '"></span>'
+        + label
+        + '</div>'
+    );
+}
+
+
+legend.addTo(map);
 
 
 /*
