@@ -290,6 +290,74 @@ select {
     color: #1f6b3a;
 }
 
+
+/* =====================================================================
+   STAGE 14S - REPATRIATE WASHINGTON INSTITUTIONAL BRANDING
+   ===================================================================== */
+
+.institute-name {
+    margin: 0 0 4px 0;
+    color: #173f32;
+    font-size: 22px;
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: 0.015em;
+}
+
+.explorer-title {
+    margin: 0 0 8px 0;
+    color: #333333;
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 650;
+}
+
+.rw-map-brand {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    margin: 0 !important;
+    padding: 0;
+    pointer-events: none;
+}
+
+.rw-map-brand img {
+    display: block;
+    width: 150px;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+}
+
+/*
+Leaflet places bottom-left controls in insertion order.
+The brand control is added first and the legend second, causing
+the brand to occupy the physical bottom position and the legend
+to stack immediately above it.
+*/
+.leaflet-bottom.leaflet-left .map-legend {
+    margin-bottom: 7px;
+}
+
+@media (max-width: 760px) {
+    .institute-name {
+        font-size: 17px;
+        line-height: 1.1;
+    }
+
+    .explorer-title {
+        font-size: 13px;
+    }
+
+    .rw-map-brand img {
+        width: 105px;
+    }
+
+    .leaflet-bottom.leaflet-left .map-legend {
+        margin-bottom: 5px;
+    }
+}
+
 </style>
 
 </head>
@@ -302,7 +370,13 @@ select {
 
 <div id="panel">
 
-<h1>Washington FY2029 Fiscal Explorer</h1>
+<div class="institute-name">
+Repatriate Washington Policy Research Institute
+</div>
+
+<div class="explorer-title">
+Washington FY2029 Fiscal Explorer
+</div>
 
 <div class="subtitle">
 Modeled legislative-district incidence of Washington's
@@ -883,6 +957,30 @@ function updatePanel(p) {
 WHOLE STATE
 =========================================================================
 */
+
+
+/*
+=========================================================================
+REPATRIATE WASHINGTON MAP BRAND
+=========================================================================
+*/
+
+const rwBrand = L.control({ position: "bottomleft" });
+
+rwBrand.onAdd = function () {
+    const div = L.DomUtil.create("div", "rw-map-brand");
+    div.innerHTML = `
+        <img
+            src="assets/repatriate-washington-brand.png"
+            alt="Repatriate Washington"
+        >
+    `;
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+};
+
+rwBrand.addTo(map);
+
 
 const legend = L.control({ position: "bottomleft" });
 
